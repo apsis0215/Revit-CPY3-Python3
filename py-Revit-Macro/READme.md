@@ -1,2 +1,2 @@
 # py-Revit-MACRO/
-  Full routines with detailed names in the MACRO folder
+  Full routines to complete single or multiple tasks within a python stand alone script.
