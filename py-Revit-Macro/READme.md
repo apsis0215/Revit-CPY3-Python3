@@ -1,4 +1,4 @@
-File naming schema:
+# File-naming-schema/
     py        =   prefix for python
     Name/Use      from most general/high level topic to more specific in Noun-Adjective reverse naming 
     CPY3      =   c python 3
