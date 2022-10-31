@@ -11,4 +11,4 @@ File naming schema:
       def()'s should focus on single-use tasks with ##Comments that can be easily adapted.
       
 # py-Revit-MACRO/
-  Full routines with detailed names in the MACRO folder
+    Full routines to complete single or multiple tasks within a python stand alone script.
