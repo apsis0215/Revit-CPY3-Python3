@@ -6,6 +6,6 @@
     py        =   file extensions (python)
 
 # py-Revit-MICRO/
-      Micro snippets and single-use def()'s of Dynamo Revit Python routines available to share with attribution and improvements shard back to this repository.
+    Micro snippets and single-use def()'s of Dynamo Revit Python routines available to share with attribution and improvements shard back to this repository.
 
-      def()'s should focus on single-use tasks with ##Comments that can be easily adapted.
+    def()'s should focus on single-use tasks with ##Comments that can be easily adapted.
