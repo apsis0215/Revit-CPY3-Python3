@@ -1,5 +1,6 @@
 ##http://thebuildingcoder.typepad.com/blog/2017/02/setting-active-view-during-idling.html
 ##https://github.com/DynamoDS/Dynamo/issues/5651  
+###UPDATES UNTESTED### Report any issue back to a branch on this repository
 import clr
 clr.AddReference("RevitServices")
 import RevitServices
