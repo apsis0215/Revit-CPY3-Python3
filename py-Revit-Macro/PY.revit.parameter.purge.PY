@@ -1,7 +1,8 @@
 import clr
+import fnmatch
 
 # ------------------------------------------------------------
-# Revit / Dynamo references
+# Revit / Dynamo
 # ------------------------------------------------------------
 clr.AddReference("RevitServices")
 from RevitServices.Persistence import DocumentManager
@@ -22,60 +23,62 @@ doc = DocumentManager.Instance.CurrentDBDocument
 bindings = doc.ParameterBindings
 
 # ------------------------------------------------------------
-# Player input parsing
+# Input helpers
 # ------------------------------------------------------------
-def parse_prefixes(value, allow_star):
+def parse_patterns(value):
     if not value:
         return []
-    value = str(value).strip()
-    if allow_star and value == "*":
-        return [""]
-    return [p.strip() for p in value.split(",") if p.strip() and p.strip() != "*"]
+    out = []
+    for v in str(value).split(","):
+        v = v.strip().lower()
+        if not v:
+            continue
+        if not any(ch in v for ch in ["*", "?", "[", "]"]):
+            v += "*"  # implicit prefix match
+        out.append(v)
+    return out
+
+def matches_any(name_l, patterns):
+    for p in patterns:
+        if fnmatch.fnmatch(name_l, p):
+            return p
+    return None
 
 # ------------------------------------------------------------
 # Inputs
 # ------------------------------------------------------------
-FilterPrefix = parse_prefixes(IN[0], True)
-ForcePrefix = parse_prefixes(IN[1], True)
-FilterKeep = parse_prefixes(IN[2], False)
+PrefixTarget = parse_patterns(IN[0])
+ForcePatterns = parse_patterns(IN[1])
+KeepPatterns  = parse_patterns(IN[2])
 
-PurgeProjectParams = bool(IN[3]) if len(IN) > 3 and IN[3] is not None else False
-ListOnly = bool(IN[4]) if len(IN) > 4 and IN[4] is not None else False
+PurgeProjectParams = bool(IN[3]) if len(IN) > 3 else False
+ListOnly = bool(IN[4]) if len(IN) > 4 else False
 
-FilterPrefix = [p.lower() for p in FilterPrefix]
-ForcePrefix = [p.lower() for p in ForcePrefix]
-FilterKeep = [p.lower() for p in FilterKeep]
+# ------------------------------------------------------------
+# Defaults
+# ------------------------------------------------------------
+if not PrefixTarget:
+    PrefixTarget = ["*"]
 
-ForceActive = bool(ForcePrefix)
+if not KeepPatterns:
+    KeepPatterns = ["ae*", "__*"]
+
+ForceActive = bool(ForcePatterns)
 
 # ------------------------------------------------------------
 # Helpers
 # ------------------------------------------------------------
-def starts_with_any(name_l, prefixes):
-    for p in prefixes:
-        if name_l.startswith(p):
-            return p
-    return None
-
 def binding_info(defn):
     if not bindings.Contains(defn):
         return "Unbound"
 
     b = bindings.get_Item(defn)
-
-    if isinstance(b, InstanceBinding):
-        scope = "Instance"
-    elif isinstance(b, TypeBinding):
-        scope = "Type"
-    else:
-        scope = "Unknown"
-
+    scope = "Instance" if isinstance(b, InstanceBinding) else "Type"
     try:
         cats = sorted([c.Name for c in b.Categories])
-        cat_str = ", ".join(cats) if cats else "No Categories"
+        cat_str = ", ".join(cats)
     except:
         cat_str = "No Categories"
-
     return "{} | {}".format(scope, cat_str)
 
 def used_in_schedules(defn):
@@ -88,12 +91,12 @@ def used_in_schedules(defn):
                 hits.append(vs.Name)
     return hits
 
+# ------------------------------------------------------------
+# Execution
+# ------------------------------------------------------------
 results = []
 
-# ------------------------------------------------------------
-# Transaction group
-# ------------------------------------------------------------
-tg = TransactionGroup(doc, "Dynamo: Parameter Audit / Purge")
+tg = TransactionGroup(doc, "Parameter purge")
 tg.Start()
 
 # ============================================================
@@ -102,66 +105,55 @@ tg.Start()
 t1 = Transaction(doc, "Shared Parameters")
 t1.Start()
 
-shared_params = (
-    FilteredElementCollector(doc)
-    .OfClass(SharedParameterElement)
-    .ToElements()
-)
+shared_params = FilteredElementCollector(doc).OfClass(SharedParameterElement).ToElements()
 
 for sp in shared_params:
     defn = sp.GetDefinition()
     name = sp.Name
     name_l = name.lower()
 
-    keep_hit = starts_with_any(name_l, FilterKeep)
-    norm_hit = starts_with_any(name_l, FilterPrefix)
-    force_hit = starts_with_any(name_l, ForcePrefix)
+    # Phase 1: Prefix candidate
+    target_hit = matches_any(name_l, PrefixTarget)
+    if not target_hit:
+        continue
+
+    # Phase 2: Keep exclusion (absolute)
+    keep_hit = matches_any(name_l, KeepPatterns)
+    if keep_hit:
+        if ListOnly:
+            results.append(f"[LIST] [Shared] {name} | KEPT")
+        else:
+            results.append(f"+++Kept [Shared] {name}")
+        continue
 
     bind = binding_info(defn)
     sched = used_in_schedules(defn)
+    in_use = bool(sched)
 
-    protected = bool(sched) and not ForceActive
-    in_scope = bool(norm_hit or force_hit)
+    # Phase 3: Force logic
+    force_hit = matches_any(name_l, ForcePatterns)
 
-    # LIST ONLY: full inventory
     if ListOnly:
-        status = []
-        if keep_hit:
-            status.append("KEPT")
-        if in_scope:
-            status.append("MATCH")
-        if protected:
-            status.append("PROTECTED")
-        if not status:
-            status.append("NONE")
-
+        status = "MATCH"
+        if in_use and not (ForceActive and force_hit):
+            status = "PROTECTED"
         extra = ""
         if sched:
-            extra = " | Schedules: " + ", ".join(sched[:5]) + ("..." if len(sched) > 5 else "")
-
-        results.append(f"[LIST] [Shared] {name} | {bind} | {', '.join(status)}{extra}")
+            extra = " | Schedules: " + ", ".join(sched[:5])
+        results.append(f"[LIST] [Shared] {name} | {bind} | {status}{extra}")
         continue
 
-    # Normal execution
-    if keep_hit:
-        results.append(f"+++Kept [Shared] {name} | {bind}")
-        continue
-
-    if not in_scope:
-        continue
-
-    if protected:
-        extra = " | Schedules: " + ", ".join(sched[:5]) + ("..." if len(sched) > 5 else "")
+    if in_use and not (ForceActive and force_hit):
+        extra = " | Schedules: " + ", ".join(sched[:5])
         results.append(f"!!!PROTECTED [Shared] {name} | {bind}{extra}")
         continue
 
     try:
         doc.Delete(sp.Id)
         tag = "-DelForce" if force_hit else "--Deleted"
-        hit = force_hit if force_hit else norm_hit
-        results.append(f"{tag} [Shared:{hit}] {name} | {bind}")
+        results.append(f"{tag} [Shared] {name} | {bind}")
     except Exception as e:
-        results.append(f"[SYSTEM] [Shared] {name} | {bind} | {e}")
+        results.append(f"[SYSTEM] [Shared] {name} | {e}")
 
 t1.Commit()
 
@@ -172,11 +164,7 @@ if PurgeProjectParams:
     t2 = Transaction(doc, "Project Parameters")
     t2.Start()
 
-    params = (
-        FilteredElementCollector(doc)
-        .OfClass(ParameterElement)
-        .ToElements()
-    )
+    params = FilteredElementCollector(doc).OfClass(ParameterElement).ToElements()
 
     for pe in params:
         if isinstance(pe, SharedParameterElement):
@@ -185,35 +173,35 @@ if PurgeProjectParams:
         name = pe.Name
         name_l = name.lower()
 
-        keep_hit = starts_with_any(name_l, FilterKeep)
-        norm_hit = starts_with_any(name_l, FilterPrefix)
-        force_hit = starts_with_any(name_l, ForcePrefix)
+        # Phase 1: Prefix candidate
+        if not matches_any(name_l, PrefixTarget):
+            continue
 
-        in_scope = bool(norm_hit or force_hit)
+        # Phase 2: Keep exclusion
+        if matches_any(name_l, KeepPatterns):
+            if ListOnly:
+                results.append(f"[LIST] [Project] {name} | KEPT")
+            else:
+                results.append(f"+++Kept [Project] {name}")
+            continue
+
+        # Phase 3: Force permission only
+        force_hit = matches_any(name_l, ForcePatterns)
 
         if ListOnly:
-            status = []
-            if keep_hit:
-                status.append("KEPT")
-            if in_scope:
-                status.append("MATCH")
-            if not status:
-                status.append("NONE")
-            results.append(f"[LIST] [Project] {name} | {', '.join(status)}")
+            status = "MATCH"
+            if not ForceActive:
+                status = "MATCH (blind)"
+            results.append(f"[LIST] [Project] {name} | {status}")
             continue
 
-        if keep_hit:
-            results.append(f"+++Kept [Project] {name}")
-            continue
-
-        if not in_scope:
+        if not ForceActive and not force_hit:
+            results.append(f"!!!SKIPPED [Project] {name} | No usage detection")
             continue
 
         try:
             doc.Delete(pe.Id)
-            tag = "-DelForce" if force_hit else "--Deleted"
-            hit = force_hit if force_hit else norm_hit
-            results.append(f"{tag} [Project:{hit}] {name}")
+            results.append(f"-DelForce [Project] {name}")
         except Exception as e:
             results.append(f"[SYSTEM] [Project] {name} | {e}")
 
