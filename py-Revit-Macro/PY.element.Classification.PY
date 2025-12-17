@@ -1,13 +1,10 @@
 # ----------------------------------------------------------------------
-# Py.Assign.Facade.Direction.v02
-# Revit 2025+, Dynamo Python 3
+# Py.Element.Classification.v03
+# Dual-side exterior test + confidence score
 #
-# Implements:
-# - Horizontal ray (walls only)
-# - Vertical ray UP from half distance
-# - Includes Massing elements
-# - No bounding-box sky tests
-# - Group-safe
+# OUT:
+#   ExteriorWalls            -> list[Wall]
+#   WallExteriorConfidence   -> {wallId:int : confidence:int}
 # ----------------------------------------------------------------------
 
 import clr
@@ -22,6 +19,8 @@ from Autodesk.Revit.DB import (
     FilteredElementCollector,
     ReferenceIntersector,
     ElementClassFilter,
+    ElementCategoryFilter,
+    LogicalOrFilter,
     FindReferenceTarget,
     View3D
 )
@@ -29,22 +28,20 @@ from Autodesk.Revit.DB import (
 from RevitServices.Persistence import DocumentManager
 from RevitServices.Transactions import TransactionManager
 
+# ----------------------------------------------------------------------
+# DOCUMENT
+# ----------------------------------------------------------------------
 doc = DocumentManager.Instance.CurrentDBDocument
-app = doc.Application
-
-# ----------------------------------------------------------------------
-# INPUTS
-# ----------------------------------------------------------------------
-includeCourtyards = bool(IN[0]) if IN[0] is not None else False
-planNorthOffsetDeg = float(IN[1]) if IN[1] not in [None, ""] else 0.0
-maxSearchDist = float(IN[2]) if IN[2] not in [None, ""] else 400.0
-verticalLimit = float(IN[3]) if IN[3] not in [None, ""] else 300.0
 
 PARAM_NAME = "__.Code.Ref.Direction"
+MAX_DIST = 400.0
+VERT_LIMIT = 300.0
+PLAN_NORTH_OFFSET = float(IN[1]) if IN[1] not in [None, ""] else 0.0
+INCLUDE_COURTYARDS = bool(IN[0]) if IN[0] is not None else False
 EPS = 1e-6
 
 # ----------------------------------------------------------------------
-# UTILITIES
+# HELPERS
 # ----------------------------------------------------------------------
 def is_in_group(e):
     return e.GroupId and e.GroupId != DB.ElementId.InvalidElementId
@@ -61,8 +58,10 @@ def wall_midpoint(w):
 
 def wall_normal_xy(w):
     c = w.Location.Curve
-    p0, p1 = c.GetEndPoint(0), c.GetEndPoint(1)
-    dx, dy = p1.X - p0.X, p1.Y - p0.Y
+    p0 = c.GetEndPoint(0)
+    p1 = c.GetEndPoint(1)
+    dx = p1.X - p0.X
+    dy = p1.Y - p0.Y
     L = math.hypot(dx, dy)
     if L < EPS:
         return None
@@ -76,6 +75,13 @@ def rotate_xy(v, deg):
         0
     )
 
+def offset_point(p, v, d):
+    return XYZ(
+        p.X + v.X * d,
+        p.Y + v.Y * d,
+        p.Z + v.Z * d
+    )
+
 # ----------------------------------------------------------------------
 # COLLECT ELEMENTS
 # ----------------------------------------------------------------------
@@ -84,13 +90,8 @@ walls = FilteredElementCollector(doc)\
     .WhereElementIsNotElementType()\
     .ToElements()
 
-windows = FilteredElementCollector(doc)\
-    .OfCategory(BuiltInCategory.OST_Windows)\
-    .WhereElementIsNotElementType()\
-    .ToElements()
-
 # ----------------------------------------------------------------------
-# GET A 3D VIEW (REQUIRED FOR RAYS)
+# 3D VIEW
 # ----------------------------------------------------------------------
 view3d = None
 for v in FilteredElementCollector(doc).OfClass(View3D):
@@ -99,145 +100,119 @@ for v in FilteredElementCollector(doc).OfClass(View3D):
         break
 
 if not view3d:
-    OUT = {"Error": "No 3D view available for ray intersection."}
-    raise Exception("3D view required")
+    OUT = {"Error": "No non-template 3D view found."}
+else:
 
-# ----------------------------------------------------------------------
-# INTERSECTORS
-# ----------------------------------------------------------------------
-wall_filter = ElementClassFilter(DB.Wall)
-wall_intersector = ReferenceIntersector(
-    wall_filter,
-    FindReferenceTarget.Element,
-    view3d
-)
-
-# Vertical blockers: Floors, Roofs, Ceilings, Mass
-blocker_categories = [
-    BuiltInCategory.OST_Floors,
-    BuiltInCategory.OST_Roofs,
-    BuiltInCategory.OST_Ceilings,
-    BuiltInCategory.OST_Mass
-]
-
-blocker_filters = []
-for bic in blocker_categories:
-    blocker_filters.append(DB.ElementCategoryFilter(bic))
-
-blocker_filter = DB.LogicalOrFilter(blocker_filters)
-
-blocker_intersector = ReferenceIntersector(
-    blocker_filter,
-    FindReferenceTarget.Element,
-    view3d
-)
-
-# ----------------------------------------------------------------------
-# TRANSACTION
-# ----------------------------------------------------------------------
-TransactionManager.Instance.EnsureInTransaction(doc)
-
-# Reset all
-for e in walls + windows:
-    if is_in_group(e):
-        continue
-    p = e.LookupParameter(PARAM_NAME)
-    if p:
-        p.Set(-1)
-
-exterior_walls = []
-exterior_windows = []
-courtyard_included = []
-courtyard_excluded = []
-
-# ----------------------------------------------------------------------
-# PROCESS WALLS
-# ----------------------------------------------------------------------
-for w in walls:
-    if is_in_group(w):
-        continue
-
-    n = wall_normal_xy(w)
-    if not n:
-        continue
-
-    mid = wall_midpoint(w)
-
-    # 1ï¸âƒ£ Horizontal ray
-    hit = wall_intersector.FindNearest(mid, n)
-    if hit and hit.Proximity < maxSearchDist:
-        lateral_dist = hit.Proximity
-        is_courtyard = True
-    else:
-        lateral_dist = maxSearchDist
-        is_courtyard = False
-
-    # 2ï¸âƒ£ Vertical test origin (half distance)
-    offset = lateral_dist * 0.5
-    test_pt = XYZ(
-        mid.X + n.X * offset,
-        mid.Y + n.Y * offset,
-        mid.Z + n.Z * offset
+    # ------------------------------------------------------------------
+    # INTERSECTORS
+    # ------------------------------------------------------------------
+    wall_intersector = ReferenceIntersector(
+        ElementClassFilter(DB.Wall),
+        FindReferenceTarget.Element,
+        view3d
     )
 
-    # 3ï¸âƒ£ Vertical ray up
-    up_hit = blocker_intersector.FindNearest(test_pt, XYZ.BasisZ)
+    blocker_filter = LogicalOrFilter([
+        ElementCategoryFilter(BuiltInCategory.OST_Floors),
+        ElementCategoryFilter(BuiltInCategory.OST_Roofs),
+        ElementCategoryFilter(BuiltInCategory.OST_Ceilings),
+        ElementCategoryFilter(BuiltInCategory.OST_Mass)
+    ])
 
-    covered = False
-    if up_hit and up_hit.Proximity <= verticalLimit:
-        covered = True
+    blocker_intersector = ReferenceIntersector(
+        blocker_filter,
+        FindReferenceTarget.Element,
+        view3d
+    )
 
-    if covered:
-        continue
+    # ------------------------------------------------------------------
+    # PROCESS
+    # ------------------------------------------------------------------
+    exterior_walls = []
+    confidence_map = {}
 
-    if is_courtyard and not includeCourtyards:
-        courtyard_excluded.append(w)
-        continue
+    TransactionManager.Instance.EnsureInTransaction(doc)
 
-    # 4ï¸âƒ£ Compute azimuth
-    n_rot = rotate_xy(n, planNorthOffsetDeg)
-    ang = math.degrees(math.atan2(n_rot.X, n_rot.Y))
-    if ang < 0:
-        ang += 360
-    ang = int(round(ang)) % 360
+    for w in walls:
+        if is_in_group(w):
+            continue
 
-    p = w.LookupParameter(PARAM_NAME)
-    if p:
-        p.Set(ang)
+        p = w.LookupParameter(PARAM_NAME)
+        if p:
+            p.Set(-1)
 
-    exterior_walls.append(w)
-    if is_courtyard:
-        courtyard_included.append(w)
+        mid = wall_midpoint(w)
+        n = wall_normal_xy(w)
+        if not n:
+            continue
 
-# ----------------------------------------------------------------------
-# WINDOWS INHERIT HOST
-# ----------------------------------------------------------------------
-for win in windows:
-    if is_in_group(win):
-        continue
+        results = []  # per side
 
-    host = win.Host
-    if not host:
-        continue
+        for side in [n, XYZ(-n.X, -n.Y, 0)]:
+            # horizontal ray
+            hit = wall_intersector.FindNearest(mid, side)
+            if hit and hit.Proximity < MAX_DIST:
+                lateral_dist = hit.Proximity
+                is_courtyard = True
+            else:
+                lateral_dist = MAX_DIST
+                is_courtyard = False
 
-    hp = host.LookupParameter(PARAM_NAME)
-    wp = win.LookupParameter(PARAM_NAME)
+            # vertical test from half distance
+            test_pt = offset_point(mid, side, lateral_dist * 0.5)
 
-    if hp and wp:
-        val = hp.AsInteger()
-        wp.Set(val)
-        if val != -1:
-            exterior_windows.append(win)
+            up_hit = blocker_intersector.FindNearest(test_pt, XYZ.BasisZ)
+            covered = bool(up_hit and up_hit.Proximity <= VERT_LIMIT)
 
-TransactionManager.Instance.TransactionTaskDone()
+            results.append({
+                "side": side,
+                "exterior": not covered,
+                "courtyard": is_courtyard
+            })
 
-# ----------------------------------------------------------------------
-# OUTPUT
-# ----------------------------------------------------------------------
-OUT = {
-    "Status": "Completed",
-    "ExteriorWalls": exterior_walls,
-    "ExteriorWindows": exterior_windows,
-    "CourtyardWallsIncluded": courtyard_included,
-    "CourtyardWallsExcluded": courtyard_excluded
-}
+        # evaluate both sides
+        exterior_sides = [r for r in results if r["exterior"]]
+
+        if not exterior_sides:
+            confidence_map[w.Id.IntegerValue] = 0
+            continue
+
+        # courtyard exclusion
+        if all(r["courtyard"] for r in exterior_sides) and not INCLUDE_COURTYARDS:
+            confidence_map[w.Id.IntegerValue] = 25
+            continue
+
+        # choose best side (prefer non-courtyard)
+        best = next((r for r in exterior_sides if not r["courtyard"]), exterior_sides[0])
+
+        # azimuth
+        n_rot = rotate_xy(best["side"], PLAN_NORTH_OFFSET)
+        ang = math.degrees(math.atan2(n_rot.X, n_rot.Y))
+        if ang < 0:
+            ang += 360
+        ang = int(round(ang)) % 360
+
+        if p:
+            p.Set(ang)
+
+        exterior_walls.append(w)
+
+        # confidence score
+        if len(exterior_sides) == 2:
+            confidence = 100
+        elif best["courtyard"]:
+            confidence = 60
+        else:
+            confidence = 85
+
+        confidence_map[w.Id.IntegerValue] = confidence
+
+    TransactionManager.Instance.TransactionTaskDone()
+
+    # ------------------------------------------------------------------
+    # OUTPUT
+    # ------------------------------------------------------------------
+    OUT = {
+        "ExteriorWalls": exterior_walls,
+        "WallExteriorConfidence": confidence_map
+    }
