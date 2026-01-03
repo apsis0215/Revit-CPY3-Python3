@@ -484,11 +484,11 @@ else:
             id2type[tid] = tt
             can, target_in, src = canonical_name_for(tt, AllowColorRGB)
             id2canon[tid] = can
-            preview.append("  '{}' → '{}' (target size {}, color via {})".format(
+            preview.append("  '{}' â†’ '{}' (target size {}, color via {})".format(
                 tname(tt), can, frac32(target_in), src
             ))
 
-        log.append("Preview (style → canonical):")
+        log.append("Preview (style â†’ canonical):")
         log.extend(preview)
         log.append("")
 
@@ -531,7 +531,7 @@ else:
                 wrote, before_in, after_in = set_text_size_to_target(tt)
                 if wrote:
                     snapped += 1
-                    samples.append("  {}: {} → {}".format(tname(tt), frac32(before_in), frac32(after_in)))
+                    samples.append("  {}: {} â†’ {}".format(tname(tt), frac32(before_in), frac32(after_in)))
             log.append("Snapped TEXT_SIZE on styles: {}".format(snapped))
             for s in samples[:8]:
                 log.append(s)
