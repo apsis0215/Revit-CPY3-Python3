@@ -1,4 +1,4 @@
-# Text style conversion â€“ color policy aware (PROJECT TextNoteTypes)
+# Text style conversion â€“ color policy aware (PROJECT TextNoteTypes) 
 # - AllowColorRGB=True  â†’ keep colors (token at end)
 # - AllowColorRGB=False â†’ force all types to BLACK, strip color tokens, merge
 #
