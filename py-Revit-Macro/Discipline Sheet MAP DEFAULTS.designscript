@@ -1,0 +1,141 @@
+{
+    // =========================
+    // GENERAL
+    // =========================
+    "general"              : "01-01",
+    "information"          : "01-01",
+    "overview"             : "01-00",
+    "regulatory"           : "01-04",
+    "code"                 : "01-10",
+    "zoning"               : "01-20",
+    "occupancy"            : "01-30",
+    "occupant load"        : "01-40",
+    "egress"               : "01-41",
+    "exit"                 : "01-41",
+
+    // =========================
+    // ARCHITECTURAL
+    // =========================
+    "architecture"         : "07-00",
+    "architectural"        : "07-00",
+    "architectural site"   : "07-10",
+    "demolition"           : "07-20",
+    "slab"                 : "07-30",
+    "framing"              : "07-35",
+    "elements"             : "07-50",
+    "interiors"            : "07-55",
+    "finishes"             : "07-60",
+    "graphics"             : "07-65",
+    "units"                : "07-80",
+
+    // =========================
+    // STRUCTURAL
+    // =========================
+    "structure"            : "08-04",
+    "structural"           : "08-04",
+    "structural site"      : "08-02",
+    "structural demolition": "08-01",
+    "foundation"           : "08-03",
+
+    // =========================
+    // INTERIORS (DESIGN DISCIPLINE)
+    // =========================
+    "interior"             : "09-02",
+    "interior design"      : "09-02",
+    "furniture"            : "09-03",
+    "furnishings"          : "09-03",
+
+    // =========================
+    // EQUIPMENT
+    // =========================
+    "equipment"            : "10-01",
+    "athletic"             : "10-01",
+    "bank"                 : "10-02",
+    "dry cleaning"         : "10-03",
+    "detention"            : "10-04",
+    "educational"          : "10-05",
+    "food service"         : "10-06",
+    "kitchen"              : "10-06",
+    "hospital"             : "10-07",
+    "laboratory"           : "10-08",
+    "maintenance"          : "10-09",
+    "parking"              : "10-10",
+    "retail"               : "10-11",
+    "site equipment"       : "10-12",
+    "theatrical"           : "10-13",
+    "video"                : "10-14",
+    "security equipment"   : "10-15",
+
+    // =========================
+    // FIRE
+    // =========================
+    "fire"                 : "11-01",
+    "fire alarm"           : "11-01",
+    "fire protection"      : "11-01",
+    "sprinkler"            : "11-02",
+    "suppression"          : "11-02",
+
+    // =========================
+    // PLUMBING
+    // =========================
+    "plumbing"             : "12-05",
+    "plumbing site"        : "12-01",
+    "plumbing demolition"  : "12-02",
+    "plumbing piping"      : "12-03",
+    "plumbing equipment"   : "12-04",
+
+    // =========================
+    // MECHANICAL
+    // =========================
+    "mechanical"           : "14-03",
+    "mechanical site"      : "14-01",
+    "mechanical demolition": "14-02",
+    "hvac"                 : "14-03",
+    "mechanical piping"    : "14-04",
+    "controls"             : "14-05",
+
+    // =========================
+    // ELECTRICAL
+    // =========================
+    "electrical"           : "15-03",
+    "electrical site"      : "15-01",
+    "electrical demolition": "15-02",
+    "power"                : "15-03",
+    "lighting"             : "15-04",
+    "instrumentation"      : "15-05",
+
+    // =========================
+    // TECHNOLOGY (AV / IT / SECURITY)
+    // =========================
+    "technology"           : "16-01",
+    "audio visual"         : "16-01",
+    "av"                   : "16-01",
+    "clock"                : "16-02",
+    "intercom"             : "16-03",
+    "monitoring"           : "16-04",
+    "data"                 : "16-05",
+    "network"              : "16-05",
+    "telephone"            : "16-06",
+    "security systems"     : "16-07",
+
+    // =========================
+    // CONTRACTOR / SHOP
+    // =========================
+    "shop"                 : "19-00",
+    "shop drawings"        : "19-00",
+    "contractor"           : "19-00",
+
+    // =========================
+    // OPERATIONS
+    // =========================
+    "operations"           : "20-00",
+    "ops"                  : "20-00",
+    "facilities"           : "20-00",
+
+    // =========================
+    // ESTIMATING
+    // =========================
+    "estimate"             : "21-00",
+    "estimating"           : "21-00",
+    "cost"                 : "21-00"
+};
