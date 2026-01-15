@@ -80,12 +80,18 @@ CPython3 may receive enums as integers. Always cast explicitly:
 # Example: ViewType enum
 from Autodesk.Revit.DB import ViewType
 
-# If IN[0] might be an int
-view_type = ViewType(IN[0]) if isinstance(IN[0], int) else IN[0]
-
-# Or map explicitly
+# Safe casting when input might be an int
 if isinstance(IN[0], int):
-    view_type = list(ViewType)[IN[0]]
+    view_type = ViewType(IN[0])
+else:
+    view_type = IN[0]
+
+# Or use a try-except for robust handling
+try:
+    view_type = ViewType(IN[0]) if isinstance(IN[0], int) else IN[0]
+except:
+    warnings.append(f"Invalid ViewType value: {IN[0]}")
+    view_type = ViewType.FloorPlan  # Default fallback
 ```
 
 ### Output Format
@@ -220,5 +226,5 @@ Follow the repository naming schema:
 - Example: `py-View-Delete-Unused-CPY3-r22.py`
 
 ## Categories
-- **py-Revit-Macro/**: Full standalone scripts for complete tasks
-- **py-Revit-Micro/**: Single-use functions and micro snippets with comments for easy adaptation
+- **py-Revit-Macro/**: Full standalone scripts that complete single or multiple tasks within a self-contained Python script. Use for complete workflows that can run independently.
+- **py-Revit-Micro/**: Single-use functions (`def()`) and micro snippets focused on specific tasks with detailed comments for easy adaptation. Use for reusable helper functions and small utilities that can be integrated into larger scripts.
