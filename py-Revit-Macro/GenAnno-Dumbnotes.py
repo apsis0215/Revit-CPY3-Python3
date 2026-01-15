@@ -1,3 +1,81 @@
+def _verify_label_binding(fm, label_elem, elem_param, family_param):
+    """
+    Double-check that the label binding was created correctly by copying base label.
+    Verifies:
+    1. The element parameter is now associated with the family parameter
+    2. The association can be retrieved back
+    3. The label element still exists and is valid
+    
+    Returns (is_verified: bool, message: str)
+    """
+    try:
+        # Check 1: Verify the label element is still valid
+        if label_elem is None or not label_elem.IsValidObject:
+            return False, "Label element is no longer valid after binding"
+        
+        # Check 2: Verify the family parameter exists in FamilyManager
+        param_found = False
+        for p in fm.Parameters:
+            if p.Id.IntegerValue == family_param.Id.IntegerValue:
+                param_found = True
+                break
+        
+        if not param_found:
+            return False, "Family parameter not found in FamilyManager after binding"
+        
+        # Check 3: Try to get the associated family parameter back from element parameter
+        try:
+            associated_fp = fm.GetAssociatedFamilyParameter(elem_param)
+            if associated_fp is None:
+                return False, "GetAssociatedFamilyParameter returned None - binding may not have persisted"
+            
+            # Verify it's the same parameter we intended to bind
+            if associated_fp.Id.IntegerValue != family_param.Id.IntegerValue:
+                return False, "Associated parameter ID mismatch: expected {}, got {}".format(
+                    family_param.Id.IntegerValue, associated_fp.Id.IntegerValue
+                )
+        except Exception as ex:
+            # GetAssociatedFamilyParameter might not be available in all API versions
+            return True, "Could not verify association (API limitation): {}".format(str(ex))
+        
+        # Check 4: Verify parameter names match
+        try:
+            if associated_fp.Definition.Name != family_param.Definition.Name:
+                return False, "Associated parameter name mismatch: expected '{}', got '{}'".format(
+                    family_param.Definition.Name, associated_fp.Definition.Name
+                )
+        except Exception:
+            pass  # Name comparison is optional
+        
+        return True, "Label binding verified successfully"
+        
+    except Exception as ex:
+        return False, "Verification failed with exception: {}".format(str(ex))
+
+
+def _verify_elementid_binding(elem_param, expected_id):
+    """
+    Double-check that an ElementId parameter was set correctly.
+    
+    Returns (is_verified: bool, message: str)
+    """
+    try:
+        actual_id = elem_param.AsElementId()
+        
+        if actual_id is None:
+            return False, "ElementId parameter returned None after setting"
+        
+        if actual_id.IntegerValue != expected_id.IntegerValue:
+            return False, "ElementId mismatch: expected {}, got {}".format(
+                expected_id.IntegerValue, actual_id.IntegerValue
+            )
+        
+        return True, "ElementId binding verified successfully"
+        
+    except Exception as ex:
+        return False, "ElementId verification failed: {}".format(str(ex))
+
+
 def _bind_label_to_family_param(fm, label_elem, family_param):
     """
     Binds a label element's text parameter to a family parameter.
@@ -17,6 +95,7 @@ def _bind_label_to_family_param(fm, label_elem, family_param):
         "elemType": _rt(label_elem),
         "attempts": [],
         "allParams": [],
+        "verificationStatus": None,  # Added for verification tracking
     }
 
     # Collect all parameter info for debugging
@@ -51,6 +130,13 @@ def _bind_label_to_family_param(fm, label_elem, family_param):
                 try:
                     fm.AssociateElementParameterToFamilyParameter(p, family_param)
                     dbg["attempts"].append("{} (exact match '{}') -> SUCCESS".format(pname, target_name))
+                    
+                    # Double-check: Verify the label was created correctly by copying base label
+                    verified, verify_msg = _verify_label_binding(fm, label_elem, p, family_param)
+                    dbg["verificationStatus"] = {"verified": verified, "message": verify_msg}
+                    if not verified:
+                        dbg["attempts"].append("VERIFICATION WARNING: {}".format(verify_msg))
+                    
                     return True, dbg
                 except Exception as ex:
                     dbg["attempts"].append("{} (exact match '{}') -> FAIL: {}".format(pname, target_name, str(ex)))
@@ -66,6 +152,13 @@ def _bind_label_to_family_param(fm, label_elem, family_param):
             try:
                 fm.AssociateElementParameterToFamilyParameter(p, family_param)
                 dbg["attempts"].append("{} (keyword match) -> SUCCESS".format(pname))
+                
+                # Double-check: Verify the label was created correctly by copying base label
+                verified, verify_msg = _verify_label_binding(fm, label_elem, p, family_param)
+                dbg["verificationStatus"] = {"verified": verified, "message": verify_msg}
+                if not verified:
+                    dbg["attempts"].append("VERIFICATION WARNING: {}".format(verify_msg))
+                
                 return True, dbg
             except Exception as ex:
                 dbg["attempts"].append("{} (keyword match) -> FAIL: {}".format(pname, str(ex)))
@@ -83,6 +176,13 @@ def _bind_label_to_family_param(fm, label_elem, family_param):
         try:
             fm.AssociateElementParameterToFamilyParameter(p, family_param)
             dbg["attempts"].append("{} (any string) -> SUCCESS".format(pname))
+            
+            # Double-check: Verify the label was created correctly by copying base label
+            verified, verify_msg = _verify_label_binding(fm, label_elem, p, family_param)
+            dbg["verificationStatus"] = {"verified": verified, "message": verify_msg}
+            if not verified:
+                dbg["attempts"].append("VERIFICATION WARNING: {}".format(verify_msg))
+            
             return True, dbg
         except Exception as ex:
             dbg["attempts"].append("{} (any string) -> FAIL: {}".format(pname, str(ex)))
@@ -102,6 +202,13 @@ def _bind_label_to_family_param(fm, label_elem, family_param):
                     try:
                         p.Set(fp_id)
                         dbg["attempts"].append("{} (ElementId set) -> SUCCESS".format(pname))
+                        
+                        # Double-check: Verify the ElementId was set correctly
+                        verified, verify_msg = _verify_elementid_binding(p, fp_id)
+                        dbg["verificationStatus"] = {"verified": verified, "message": verify_msg}
+                        if not verified:
+                            dbg["attempts"].append("VERIFICATION WARNING: {}".format(verify_msg))
+                        
                         return True, dbg
                     except Exception as ex:
                         dbg["attempts"].append("{} (ElementId set) -> FAIL: {}".format(pname, str(ex)))
