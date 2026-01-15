@@ -551,8 +551,11 @@ def _bind_label_to_family_param(fm, label_elem, family_param):
             dbg["attempts"].append("{} (any string) -> FAIL: {}".format(pname, str(ex)))
     
     # Strategy 4: Try ElementId parameters (label parameter reference)
+    # Priority: "Label" exact match, then any parameter containing "label"
     try:
         fp_id = family_param.Id
+        
+        # First, try exact match for "Label" parameter (most common in Generic Annotation families)
         for p in label_elem.Parameters:
             try:
                 if p.StorageType != StorageType.ElementId:
@@ -560,11 +563,10 @@ def _bind_label_to_family_param(fm, label_elem, family_param):
                 pname = (p.Definition.Name or "").strip()
                 pname_lower = pname.lower()
                 
-                # Look for parameters that reference label parameters
-                if any(kw in pname_lower for kw in ["label", "param", "parameter"]):
+                if pname_lower == "label":
                     try:
                         p.Set(fp_id)
-                        dbg["attempts"].append("{} (ElementId set) -> SUCCESS".format(pname))
+                        dbg["attempts"].append("{} (ElementId exact 'Label') -> SUCCESS".format(pname))
                         
                         # Double-check: Verify the ElementId was set correctly
                         verified, verify_msg = _verify_elementid_binding(p, fp_id)
@@ -574,7 +576,37 @@ def _bind_label_to_family_param(fm, label_elem, family_param):
                         
                         return True, dbg
                     except Exception as ex:
-                        dbg["attempts"].append("{} (ElementId set) -> FAIL: {}".format(pname, str(ex)))
+                        dbg["attempts"].append("{} (ElementId exact 'Label') -> FAIL: {}".format(pname, str(ex)))
+            except Exception:
+                continue
+        
+        # Then try any parameter containing "label" in the name
+        for p in label_elem.Parameters:
+            try:
+                if p.StorageType != StorageType.ElementId:
+                    continue
+                pname = (p.Definition.Name or "").strip()
+                pname_lower = pname.lower()
+                
+                # Skip if already tried as exact match
+                if pname_lower == "label":
+                    continue
+                
+                # Look for parameters that contain "label" in the name
+                if "label" in pname_lower:
+                    try:
+                        p.Set(fp_id)
+                        dbg["attempts"].append("{} (ElementId contains 'label') -> SUCCESS".format(pname))
+                        
+                        # Double-check: Verify the ElementId was set correctly
+                        verified, verify_msg = _verify_elementid_binding(p, fp_id)
+                        dbg["verificationStatus"] = {"verified": verified, "message": verify_msg}
+                        if not verified:
+                            dbg["attempts"].append("VERIFICATION WARNING: {}".format(verify_msg))
+                        
+                        return True, dbg
+                    except Exception as ex:
+                        dbg["attempts"].append("{} (ElementId contains 'label') -> FAIL: {}".format(pname, str(ex)))
             except Exception:
                 continue
     except Exception:
