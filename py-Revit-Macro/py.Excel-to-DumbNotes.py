@@ -215,12 +215,31 @@ def _find_seed_label_and_report(fdoc):
     return None, report
 
 def _try_bind_label(label_elem, family_param):
+    """
+    Binds a label element to a family parameter by setting its ElementId parameter.
+    Priority: exact match for "Label" parameter, then any parameter containing "label".
+    """
     try:
+        # First, try exact match for "Label" parameter (most common in Generic Annotation families)
         for p in label_elem.Parameters:
             try:
                 if p.StorageType == StorageType.ElementId:
                     nm = p.Definition.Name.lower()
-                    if "label" in nm and "parameter" in nm:
+                    if nm == "label":
+                        p.Set(family_param.Id)
+                        return True
+            except:
+                pass
+        
+        # Then try any parameter containing "label" in the name
+        for p in label_elem.Parameters:
+            try:
+                if p.StorageType == StorageType.ElementId:
+                    nm = p.Definition.Name.lower()
+                    # Skip if already tried as exact match
+                    if nm == "label":
+                        continue
+                    if "label" in nm:
                         p.Set(family_param.Id)
                         return True
             except:
