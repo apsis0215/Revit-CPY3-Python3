@@ -54,12 +54,15 @@ else:
 from Autodesk.Revit.DB import Transaction
 
 # Validate inputs first
-if valid_input:
+elements = IN[0] if IN[0] else []
+if elements and len(elements) > 0:
     trans = Transaction(doc, 'Transaction Name')
     trans.Start()
     try:
         # All Revit modifications here
-        result = modify_elements()
+        for elem in elements:
+            # Modify element properties, etc.
+            pass
         trans.Commit()
     except Exception as e:
         trans.RollBack()
@@ -89,7 +92,7 @@ else:
 # Or use a try-except for robust handling
 try:
     view_type = ViewType(IN[0]) if isinstance(IN[0], int) else IN[0]
-except:
+except Exception as e:
     warnings.append(f"Invalid ViewType value: {IN[0]}")
     view_type = ViewType.FloorPlan  # Default fallback
 ```
@@ -222,8 +225,8 @@ Follow the repository naming schema:
 - Prefix with `py` for Python files
 - Use descriptive names (general to specific)
 - Include `CPY3` to indicate CPython3
-- Include Revit version if relevant (e.g., `r22` for Revit 2022)
-- Example: `py-View-Delete-Unused-CPY3-r22.py`
+- Include Revit version if relevant (e.g., `r25` for Revit 2025)
+- Example: `py-View-Delete-Unused-CPY3-r25.py`
 
 ## Categories
 - **py-Revit-Macro/**: Full standalone scripts that complete single or multiple tasks within a self-contained Python script. Use for complete workflows that can run independently.
