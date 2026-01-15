@@ -597,6 +597,10 @@ try:
             raise Exception("Failed to bind seed label to family parameter '{}'".format(headers[1]))
         _try_set_justification_int_params(seed_elem, first_h, first_v)
 
+        # Store the original element type
+        seed_type_id = seed_elem.GetTypeId()
+        seed_symbol = fam_doc.GetElement(seed_type_id)
+
         # col3..N: copy within the SAME view (keeps OWNER_VIEW_ID consistent)
         for c in range(3, max_col + 1):
             target_x = rest_start_x + (c - 3) * spacing_ft
@@ -610,6 +614,14 @@ try:
             new_elem = fam_doc.GetElement(new_id)
             if new_elem is None:
                 raise Exception("GetElement(copyId) returned None for column '{}'".format(headers[c - 1]))
+
+            # Ensure the copied element maintains the same type as the seed
+            if new_elem.GetTypeId().IntegerValue != seed_type_id.IntegerValue:
+                try:
+                    new_elem.ChangeTypeId(seed_type_id)
+                    warnings.append("Changed type for col '{}' to match seed label".format(headers[c - 1]))
+                except Exception as type_ex:
+                    warnings.append("Could not change type for col '{}': {}".format(headers[c - 1], type_ex))
 
             ok, dbg = _bind_label_to_family_param(fm, new_elem, param_map[c])
             if not ok:
