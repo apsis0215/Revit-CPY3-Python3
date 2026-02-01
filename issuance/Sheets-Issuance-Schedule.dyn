@@ -1,0 +1,882 @@
+{
+  "Uuid": "109fbe83-cc7d-4870-8f17-a1b6fc6cf3a3",
+  "IsCustomNode": false,
+  "Description": "",
+  "Name": "Sheets-Issuance-Schedule",
+  "ElementResolver": {
+    "ResolutionMap": {}
+  },
+  "Inputs": [
+    {
+      "Id": "10a50d6791764e53946fbce925712181",
+      "Name": "06.Only Show Issued Revisions(TRUE)",
+      "Type": "boolean",
+      "Type2": "boolean",
+      "Value": "false",
+      "Description": "Enables selection between True and False"
+    },
+    {
+      "Id": "ba163babc5af454690230805cc4b1aeb",
+      "Name": "02.Revision param prefix",
+      "Type": "string",
+      "Type2": "string",
+      "Value": "REV",
+      "Description": "Creates a string"
+    },
+    {
+      "Id": "902b9bdf6f1e424a87ab1c9e9aff7b5a",
+      "Name": "04.Marker Symbol",
+      "Type": "string",
+      "Type2": "string",
+      "Value": "●",
+      "Description": "Creates a string"
+    },
+    {
+      "Id": "259abe3804d649c1adaa3affd5047015",
+      "Name": "01.Param group assignment in proerties",
+      "Type": "string",
+      "Type2": "string",
+      "Value": "Graphics",
+      "Description": "Creates a string"
+    }
+  ],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "CoreNodeModels.Input.BoolSelector, CoreNodeModels",
+      "Id": "10a50d6791764e53946fbce925712181",
+      "NodeType": "BooleanInputNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "ec08ae2b7ccf4b06a0e9957a732b4fc0",
+          "Name": "",
+          "Description": "Boolean",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Enables selection between True and False",
+      "InputValue": false
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Input.StringInput, CoreNodeModels",
+      "Id": "ba163babc5af454690230805cc4b1aeb",
+      "NodeType": "StringInputNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "152999220554401d8d41379a31b5b3e4",
+          "Name": "",
+          "Description": "String",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Creates a string",
+      "InputValue": "REV"
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Input.StringInput, CoreNodeModels",
+      "Id": "902b9bdf6f1e424a87ab1c9e9aff7b5a",
+      "NodeType": "StringInputNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "45044862460b4bb8b0c31c8706a38132",
+          "Name": "",
+          "Description": "String",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Creates a string",
+      "InputValue": "●"
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Input.BoolSelector, CoreNodeModels",
+      "Id": "efd6621f61394d3c8a3a886c7db9cba6",
+      "NodeType": "BooleanInputNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "ff8e363ec72341848669100865c75e4d",
+          "Name": "",
+          "Description": "Boolean",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Enables selection between True and False",
+      "InputValue": false
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Input.StringInput, CoreNodeModels",
+      "Id": "259abe3804d649c1adaa3affd5047015",
+      "NodeType": "StringInputNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "04c68317a6534680b8de978ab6aabc53",
+          "Name": "",
+          "Description": "String",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Creates a string",
+      "InputValue": "Graphics"
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Input.BoolSelector, CoreNodeModels",
+      "Id": "639b0ac01a9e4504a146bb7cc5e90614",
+      "NodeType": "BooleanInputNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "52f57e7c8a2b45079a299257b420b959",
+          "Name": "",
+          "Description": "Boolean",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Enables selection between True and False",
+      "InputValue": false
+    },
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "Code": "# [py.RevParams-WriteSharedParamFile.py]\r\n# V00-07-2026-02-01t1519p\r\n# encoding: utf-8\r\n# Purpose and IO:\r\n#   Manual inputs:\r\n#     IN[0]=ParamGroupAssignment (string)                     # stored for downstream (this node does NOT load/bind)\r\n#     IN[1]=RevisionParamPrefix (string) default \"REV.\"       # used as literal prefix in ParamName\r\n#     IN[2]=MakeParamsNonUserModifiable (bool) default False  # written into USERMODIFIABLE column for NEW params AND UPDATED existing params\r\n#     IN[3]=revisionsData (list[dict]) from py.Revisions-InProject-Data.py OUT[0]\r\n#\r\n#   Behavior (NO Revit API loading/binding here):\r\n#     0) Shared parameter file path is STABLE per-model:\r\n#          %TEMP%\\Revisions_<ModelName>.txt\r\n#     1) Build canonical ParamName (FORCE 6-bit) per revision:\r\n#          ParamName := {RevPrefix}{yyyymmdd}{snippet}\r\n#          - max ParamName length for forced 6-bit encoder is 21 chars\r\n#     2) Deterministic GUID is computed from ParamName (FORCE 6-bit, VBA-compatible charset)\r\n#        - Characters NOT in the charset are substituted with '.' (index 0)\r\n#     3) If file exists: PARSE existing PARAM rows and UPSERT by GUID:\r\n#        - If GUID exists -> UPDATE row fields:\r\n#            NAME, VISIBLE=1, DESCRIPTION (tooltip), USERMODIFIABLE\r\n#        - If GUID missing -> APPEND new PARAM row\r\n#     4) DESCRIPTION (tooltip) := full revision name (long form)\r\n#     5) Output file path + packets for downstream node(s) (do not load yet)\r\n#\r\n#   OUT=list:\r\n#     OUT[0]=SharedParamFilePath (string)\r\n#     OUT[1]=ParamNames (list[string])                 # canonical names used for CURRENT revisions\r\n#     OUT[2]=RevIdToParam (dict[str,str])              # revision id -> canonical param name\r\n#     OUT[3]=Report (dict)\r\n#     OUT[4]=ParamPacket (list[dict])                  # revision + param + guid bundle (CURRENT revisions)\r\n#     OUT[5]=ParamNameToGuid (dict[str,str])           # canonical param name -> guid (CURRENT revisions)\r\n\r\nimport os\r\nimport re\r\nimport tempfile\r\nfrom datetime import datetime\r\n\r\nimport clr\r\nclr.AddReference(\"RevitServices\")\r\nfrom RevitServices.Persistence import DocumentManager\r\n\r\n#####################################\r\n## 0000_Constants()\r\n#####################################\r\nBASE_ALL = r\"\"\".1234ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz056789!\\\"#$%&'()*+,-./:;<=>?@[\\]^`{|}~\"\"\"\r\n\r\nDISCLAIMER = (\r\n    \"# Patent Pending: Deterministic reversible GUID encoding system\\n\"\r\n    \"# Inventor: Ron E. Allen\\n\"\r\n    \"# ©2026 Ron E. Allen - all rights reserved.\\n\"\r\n)\r\n\r\nGROUP_NAME_IN_FILE = \"DynamoProjectLocal\"\r\n\r\n# Forced 6-bit => max length = floor(128/6) = 21\r\nMAX_LEN_6BIT = int(128 / 6)  # 21\r\n\r\n#####################################\r\n## 0100_String-Helpers()\r\n#####################################\r\ndef safe_str(x):\r\n    \"\"\"Comment: defensive string conversion.\"\"\"\r\n    try:\r\n        return \"\" if x is None else str(x)\r\n    except:\r\n        return \"\"\r\n\r\ndef pad2(num_str):\r\n    \"\"\"Comment: 2-digit revision number formatting (best effort).\"\"\"\r\n    try:\r\n        n = int(str(num_str).strip())\r\n        return \"{:02d}\".format(n)\r\n    except:\r\n        s = safe_str(num_str).strip()\r\n        if len(s) >= 2:\r\n            return s\r\n        return (\"0\" + s) if s else \"00\"\r\n\r\ndef sanitize_for_param_name(name):\r\n    \"\"\"\r\n    Comment: sanitize input for a Revit parameter name (NOT the compression).\r\n    Keeps it readable and stable for downstream.\r\n    \"\"\"\r\n    name = safe_str(name)\r\n    for b in [\"\\n\", \"\\r\", \"\\t\"]:\r\n        name = name.replace(b, \" \")\r\n    name = \" \".join(name.split())\r\n    for ch in [\"{\", \"}\", \"[\", \"]\", \"<\", \">\", \"|\", \";\"]:\r\n        name = name.replace(ch, \"\")\r\n    return name.strip()\r\n\r\ndef sanitize_filename(name):\r\n    \"\"\"Comment: make a safe Windows filename stem.\"\"\"\r\n    s = safe_str(name).strip()\r\n    if not s:\r\n        return \"UnnamedModel\"\r\n    s = re.sub(r\"[\\\\/:*?\\\"<>|]+\", \"_\", s)\r\n    s = re.sub(r\"\\s+\", \"_\", s)\r\n    s = s.strip(\"._ \")\r\n    return s if s else \"UnnamedModel\"\r\n\r\n#####################################\r\n## 0150_Normalize-Inputs()\r\n#####################################\r\ndef normalize_revisions_data(obj):\r\n    \"\"\"\r\n    Comment: accept list[dict] or wrapped [[dict..]] and return list[dict].\r\n    \"\"\"\r\n    if obj is None:\r\n        return []\r\n    if isinstance(obj, list):\r\n        if len(obj) == 0:\r\n            return []\r\n        if isinstance(obj[0], dict):\r\n            return obj\r\n        if isinstance(obj[0], list) and obj[0] and isinstance(obj[0][0], dict):\r\n            return obj[0]\r\n    return []\r\n\r\n#####################################\r\n## 0200_Date-Normalization(yyyymmdd)\r\n#####################################\r\ndef to_yyyymmdd(date_str):\r\n    \"\"\"\r\n    Comment: best-effort convert RevisionDate to yyyymmdd.\r\n    Accepts common formats:\r\n      - YYYY-MM-DD / YYYY/MM/DD\r\n      - MM/DD/YYYY\r\n      - digits-only (tries yyyyMMdd, else mmddyyyy)\r\n    Fallback: \"00000000\"\r\n    \"\"\"\r\n    s = safe_str(date_str).strip()\r\n    if not s:\r\n        return \"00000000\"\r\n\r\n    m = re.match(r\"^\\s*(\\d{4})[-/](\\d{1,2})[-/](\\d{1,2})\\s*$\", s)\r\n    if m:\r\n        y = m.group(1)\r\n        mo = \"{:02d}\".format(int(m.group(2)))\r\n        d = \"{:02d}\".format(int(m.group(3)))\r\n        return \"{}{}{}\".format(y, mo, d)\r\n\r\n    m = re.match(r\"^\\s*(\\d{1,2})[-/](\\d{1,2})[-/](\\d{4})\\s*$\", s)\r\n    if m:\r\n        mo = \"{:02d}\".format(int(m.group(1)))\r\n        d = \"{:02d}\".format(int(m.group(2)))\r\n        y = m.group(3)\r\n        return \"{}{}{}\".format(y, mo, d)\r\n\r\n    digits = re.sub(r\"\\D+\", \"\", s)\r\n    if len(digits) >= 8:\r\n        digits = digits[:8]\r\n        if digits.startswith(\"19\") or digits.startswith(\"20\"):\r\n            return digits\r\n        mm = digits[0:2]\r\n        dd = digits[2:4]\r\n        yy = digits[4:8]\r\n        if yy.startswith(\"19\") or yy.startswith(\"20\"):\r\n            return \"{}{}{}\".format(yy, mm, dd)\r\n\r\n    return \"00000000\"\r\n\r\n#####################################\r\n## 0300_Snippet-Compression(~10 chars)\r\n#####################################\r\ndef compress_desc_to_snippet(desc):\r\n    \"\"\"\r\n    Comment: compress Description into alnum-only (A-Z0-9), removing separators.\r\n    We upper-case to stabilize output and avoid locale casing surprises.\r\n    \"\"\"\r\n    s = sanitize_for_param_name(desc).upper()\r\n    s = re.sub(r\"[^A-Z0-9]+\", \"\", s)\r\n    return s or \"X\"\r\n\r\ndef build_canonical_param_name(prefix, yyyymmdd, desc, max_len=MAX_LEN_6BIT, desired_snip=10):\r\n    \"\"\"\r\n    Comment: canonical ParamName := {prefix}{yyyymmdd}{snippet}\r\n    Ensures total length <= 21 for forced 6-bit encoding.\r\n    \"\"\"\r\n    pfx = safe_str(prefix)\r\n    base = \"{}{}\".format(pfx, yyyymmdd)\r\n    remaining = max_len - len(base)\r\n    if remaining <= 0:\r\n        return base[:max_len]\r\n\r\n    snippet = compress_desc_to_snippet(desc)\r\n    snip_len = min(desired_snip, remaining)\r\n    return (base + snippet[:snip_len])[:max_len]\r\n\r\n#####################################\r\n## 0400_Deterministic-GUID(VBA-Compatible, FORCE 6-bit)\r\n#####################################\r\ndef _dec2bin(n, bits):\r\n    \"\"\"Comment: decimal -> fixed-width binary.\"\"\"\r\n    n = int(n)\r\n    s = \"\"\r\n    while n != 0:\r\n        s = str(n % 2) + s\r\n        n //= 2\r\n    return ((\"0\" * bits) + s)[-bits:]\r\n\r\ndef _bin2dec(bs):\r\n    \"\"\"Comment: binary string -> int.\"\"\"\r\n    res = 0\r\n    for i in range(len(bs)):\r\n        res += int(bs[-1 - i]) * (2 ** i)\r\n    return res\r\n\r\ndef guid_encode_from_name_force6(var_name):\r\n    \"\"\"\r\n    Comment: VBA-compatible deterministic GUID encoding (FORCED 6-bit).\r\n    Illegal chars are substituted with '.' because idx=0 -> BASE_ALL[0] == '.'\r\n    Returns: (guid_str, bit_size, name_used_for_guid)\r\n    \"\"\"\r\n    sname = (var_name or \"\").strip()\r\n    bit_size = 6\r\n\r\n    max_len = int(128 / bit_size)  # 21\r\n    sname = sname[:max_len]\r\n\r\n    bin_string = \"\"\r\n    for ch in sname:\r\n        idx = BASE_ALL.find(ch)\r\n        if idx < 0 or idx >= (2 ** bit_size):\r\n            idx = 0\r\n        bin_string += _dec2bin(idx, bit_size)\r\n\r\n    bin_string += \"0\" * 128\r\n    bin_string = bin_string[:127] + \"1\"  # forced 6-bit -> last bit = 1\r\n\r\n    hex32 = \"\"\r\n    while len(bin_string) > 0:\r\n        byte_val = _bin2dec(bin_string[:8])\r\n        hex32 += (\"0\" + format(byte_val, \"X\"))[-2:]\r\n        bin_string = bin_string[8:]\r\n\r\n    # ensure last nibble LSB set to 1\r\n    last = int(hex32[-1], 16)\r\n    last = (last & 0xE) | 1\r\n    hex32 = hex32[:-1] + format(last, \"X\")\r\n\r\n    guid_str = \"{}-{}-{}-{}-{}\".format(hex32[:8], hex32[8:12], hex32[12:16], hex32[16:20], hex32[20:32])\r\n\r\n    return guid_str.upper(), bit_size, sname\r\n\r\n#####################################\r\n## 0500_File-Path(Stable-Per-Model)\r\n#####################################\r\ndef get_model_based_sharedparam_path():\r\n    \"\"\"\r\n    Comment: Stable shared parameter file path per model.\r\n    Uses doc.PathName if available; else doc.Title.\r\n    \"\"\"\r\n    doc = DocumentManager.Instance.CurrentDBDocument\r\n    model_name = \"\"\r\n    try:\r\n        pn = safe_str(getattr(doc, \"PathName\", \"\"))\r\n        if pn and pn.strip():\r\n            model_name = os.path.splitext(os.path.basename(pn))[0]\r\n    except:\r\n        model_name = \"\"\r\n\r\n    if not model_name:\r\n        try:\r\n            model_name = safe_str(getattr(doc, \"Title\", \"\")) or \"UnnamedModel\"\r\n        except:\r\n            model_name = \"UnnamedModel\"\r\n\r\n    stem = sanitize_filename(model_name)\r\n    td = tempfile.gettempdir()\r\n    return os.path.join(td, \"Revisions_{}.txt\".format(stem)), stem\r\n\r\n#####################################\r\n## 0600_Read-Existing-File-And-Upsert()\r\n#####################################\r\ndef parse_existing_guids_and_header(lines):\r\n    \"\"\"\r\n    Comment: Parse existing PARAM GUIDs.\r\n    Returns: (guid_set_upper, has_param_header)\r\n    \"\"\"\r\n    guid_set = set()\r\n    has_param_header = False\r\n\r\n    for ln in lines:\r\n        s = ln.rstrip(\"\\n\\r\")\r\n        if s.startswith(\"*PARAM\"):\r\n            has_param_header = True\r\n        if s.startswith(\"PARAM\\t\"):\r\n            parts = s.split(\"\\t\")\r\n            if len(parts) >= 3:\r\n                g = safe_str(parts[1]).strip().upper()\r\n                if g:\r\n                    guid_set.add(g)\r\n    return guid_set, has_param_header\r\n\r\ndef build_new_file_header(group_name):\r\n    \"\"\"Comment: create a clean Revit shared parameter file header with disclaimer.\"\"\"\r\n    out = []\r\n    out.append(\"# This is a Revit shared parameter file.\")\r\n    for ln in DISCLAIMER.splitlines():\r\n        out.append(ln)\r\n    out.extend([\r\n        \"*META\\tVERSION\\tMINVERSION\",\r\n        \"META\\t2\\t1\",\r\n        \"*GROUP\\tID\\tNAME\",\r\n        \"GROUP\\t1\\t{}\".format(group_name),\r\n        \"*PARAM\\tGUID\\tNAME\\tDATATYPE\\tDATACATEGORY\\tGROUP\\tVISIBLE\\tDESCRIPTION\\tUSERMODIFIABLE\",\r\n    ])\r\n    return out\r\n\r\ndef build_param_line(guid, pname, tooltip, non_user_modifiable):\r\n    \"\"\"Comment: build a single PARAM row.\"\"\"\r\n    user_mod = \"0\" if bool(non_user_modifiable) else \"1\"\r\n    tip = safe_str(tooltip).replace(\"\\t\", \" \")\r\n    return \"PARAM\\t{}\\t{}\\tTEXT\\t\\t1\\t1\\t{}\\t{}\".format(guid, pname, tip, user_mod)\r\n\r\ndef parse_param_rows(lines):\r\n    \"\"\"\r\n    Comment: build a GUID->(rowIndex, parts) map for existing PARAM rows.\r\n    Expected parts:\r\n      0=PARAM,1=GUID,2=NAME,3=DATATYPE,4=DATACATEGORY,5=GROUP,6=VISIBLE,7=DESCRIPTION,8=USERMODIFIABLE\r\n    \"\"\"\r\n    guid_to_row = {}\r\n    for i, ln in enumerate(lines):\r\n        s = safe_str(ln).rstrip(\"\\n\\r\")\r\n        if not s.startswith(\"PARAM\\t\"):\r\n            continue\r\n        parts = s.split(\"\\t\")\r\n        if len(parts) < 9:\r\n            continue\r\n        g = safe_str(parts[1]).strip().upper()\r\n        if g:\r\n            guid_to_row[g] = (i, parts)\r\n    return guid_to_row\r\n\r\ndef upsert_param_row(lines, guid_to_row, guid, pname, tooltip, non_user_modifiable):\r\n    \"\"\"\r\n    Comment:\r\n      If GUID exists -> UPDATE row: NAME, VISIBLE=1, DESCRIPTION, USERMODIFIABLE.\r\n      If GUID missing -> APPEND new row.\r\n    Returns: \"added\" | \"updated\" | \"unchanged\"\r\n    \"\"\"\r\n    g = safe_str(guid).strip().upper()\r\n    n = safe_str(pname).strip()\r\n    tip = safe_str(tooltip).replace(\"\\t\", \" \").strip()\r\n    desired_user_mod = \"0\" if bool(non_user_modifiable) else \"1\"\r\n\r\n    if g in guid_to_row:\r\n        row_i, parts = guid_to_row[g]\r\n        while len(parts) < 9:\r\n            parts.append(\"\")\r\n\r\n        changed = False\r\n\r\n        if safe_str(parts[2]) != n:\r\n            parts[2] = n\r\n            changed = True\r\n\r\n        if safe_str(parts[6]) != \"1\":\r\n            parts[6] = \"1\"\r\n            changed = True\r\n\r\n        if safe_str(parts[7]) != tip:\r\n            parts[7] = tip\r\n            changed = True\r\n\r\n        if safe_str(parts[8]) != desired_user_mod:\r\n            parts[8] = desired_user_mod\r\n            changed = True\r\n\r\n        if changed:\r\n            lines[row_i] = \"\\t\".join(parts)\r\n            guid_to_row[g] = (row_i, parts)\r\n            return \"updated\"\r\n        return \"unchanged\"\r\n\r\n    lines.append(build_param_line(g, n, tip, non_user_modifiable))\r\n    guid_to_row[g] = (len(lines) - 1, lines[-1].split(\"\\t\"))\r\n    return \"added\"\r\n\r\ndef safe_write_lines(path, lines):\r\n    \"\"\"\r\n    Comment: write lines to path.\r\n    If locked, write to an alternate file and return that path.\r\n    \"\"\"\r\n    text = \"\\n\".join(lines)\r\n    try:\r\n        with open(path, \"w\") as f:\r\n            f.write(text)\r\n        return path, None\r\n    except Exception as ex:\r\n        base, ext = os.path.splitext(path)\r\n        for i in range(1, 50):\r\n            alt = \"{}_ALT{:02d}{}\".format(base, i, ext)\r\n            try:\r\n                with open(alt, \"w\") as f:\r\n                    f.write(text)\r\n                return alt, \"Primary file locked; wrote ALT instead: {}\".format(safe_str(ex))\r\n            except:\r\n                continue\r\n        return path, \"Failed to write file (locked?): {}\".format(safe_str(ex))\r\n\r\n#####################################\r\n## 0900_Main()\r\n#####################################\r\nparam_group_assignment = IN[0] if IN and len(IN) > 0 and IN[0] is not None else \"Text\"\r\nrev_prefix = IN[1] if IN and len(IN) > 1 and IN[1] else \"REV.\"\r\nmake_num = IN[2] if IN and len(IN) > 2 and IN[2] is not None else False\r\nraw_revisions = IN[3] if IN and len(IN) > 3 else None\r\n\r\nrevisions_data = normalize_revisions_data(raw_revisions)\r\n\r\nnotes = []\r\nreport = {\r\n    \"RuntimeStamp\": datetime.now().strftime(\"%Y-%m-%dT%H:%M:%S\"),\r\n    \"ParamGroupAssignment_Input\": safe_str(param_group_assignment),\r\n    \"RevPrefix\": safe_str(rev_prefix),\r\n    \"MakeNonUserModifiable\": bool(make_num),\r\n    \"GroupNameInFile\": GROUP_NAME_IN_FILE,\r\n    \"MaxNameLen_6bit\": MAX_LEN_6BIT,\r\n    \"RevisionsData_Count\": len(revisions_data),\r\n}\r\n\r\nsp_path, model_stem = get_model_based_sharedparam_path()\r\nreport[\"ModelStem\"] = model_stem\r\nreport[\"SharedParamFilePath\"] = sp_path\r\n\r\ntry:\r\n    revs_sorted = sorted(revisions_data, key=lambda r: int(r.get(\"SequenceNumber\", 10**9)))\r\nexcept:\r\n    revs_sorted = list(revisions_data)\r\n    notes.append(\"Warning: revisionsData sort by SequenceNumber failed; using input order.\")\r\n\r\nparam_packet = []\r\nparam_names = []\r\nrev_id_to_param = {}\r\nparam_name_to_guid = {}\r\n\r\nfor r in revs_sorted:\r\n    if not isinstance(r, dict):\r\n        continue\r\n\r\n    rid = r.get(\"Id\", None)\r\n    if rid is None:\r\n        continue\r\n    try:\r\n        rid_int = int(rid)\r\n    except:\r\n        continue\r\n\r\n    seq = r.get(\"SequenceNumber\", 10**9)\r\n    rev_num = safe_str(r.get(\"RevisionNumber\", \"\"))\r\n    rev_date_raw = safe_str(r.get(\"RevisionDate\", \"\"))\r\n    desc_raw = safe_str(r.get(\"Description\", \"\"))\r\n\r\n    yyyymmdd = to_yyyymmdd(rev_date_raw)\r\n    pname = build_canonical_param_name(rev_prefix, yyyymmdd, desc_raw, max_len=MAX_LEN_6BIT, desired_snip=10)\r\n\r\n    full_tip = sanitize_for_param_name(\"{}{}.{}.{}\".format(\r\n        safe_str(rev_prefix),\r\n        pad2(rev_num),\r\n        rev_date_raw,\r\n        desc_raw\r\n    ))\r\n\r\n    guid, bit_size, name_used_for_guid = guid_encode_from_name_force6(pname)\r\n\r\n    row = {\r\n        \"RevisionId\": str(rid_int),\r\n        \"SequenceNumber\": int(seq) if safe_str(seq).strip() else int(10**9),\r\n        \"RevisionNumber\": rev_num,\r\n        \"RevisionDate\": rev_date_raw,\r\n        \"Description\": desc_raw,\r\n        \"ParamName\": str(pname),\r\n        \"ParamGuid\": str(guid),\r\n        \"BitSize\": int(bit_size),\r\n        \"NameUsedForGuid\": str(name_used_for_guid),\r\n        \"ParamTip\": str(full_tip),\r\n        \"YYYYMMDD\": str(yyyymmdd),\r\n        \"UserModifiableDesired\": (False if bool(make_num) else True),\r\n    }\r\n\r\n    param_packet.append(row)\r\n    param_names.append(str(pname))\r\n    rev_id_to_param[rid_int] = str(pname)\r\n    param_name_to_guid[str(pname)] = str(guid)\r\n\r\nparam_names_out = [str(x) for x in param_names]\r\nrev_id_to_param_out = {str(k): str(v) for k, v in rev_id_to_param.items()}\r\n\r\nreport[\"ParamCount_CurrentRevs\"] = len(param_names_out)\r\n\r\nexisting_lines = []\r\nfile_existed = os.path.exists(sp_path)\r\nreport[\"FileExisted\"] = bool(file_existed)\r\n\r\nif file_existed:\r\n    try:\r\n        with open(sp_path, \"r\") as f:\r\n            existing_lines = f.read().splitlines()\r\n    except Exception as ex:\r\n        existing_lines = []\r\n        notes.append(\"Warning: failed reading existing file; will rebuild header. {}\".format(safe_str(ex)))\r\n\r\nexisting_guid_set, has_param_header = parse_existing_guids_and_header(existing_lines)\r\nreport[\"ExistingGuidCount\"] = len(existing_guid_set)\r\nreport[\"ExistingHasParamHeader\"] = bool(has_param_header)\r\n\r\nif (not file_existed) or (not has_param_header) or (len(existing_lines) < 5):\r\n    lines_out = build_new_file_header(GROUP_NAME_IN_FILE)\r\n    report[\"HeaderMode\"] = \"RebuiltHeader\"\r\nelse:\r\n    lines_out = list(existing_lines)\r\n    report[\"HeaderMode\"] = \"PreservedExisting\"\r\n\r\nguid_to_row = parse_param_rows(lines_out)\r\n\r\nadded = 0\r\nupdated = 0\r\nunchanged = 0\r\nadded_sample = []\r\nupdated_sample = []\r\n\r\nfor row in param_packet:\r\n    g = safe_str(row.get(\"ParamGuid\")).upper()\r\n    n = safe_str(row.get(\"ParamName\"))\r\n    tip = safe_str(row.get(\"ParamTip\"))\r\n\r\n    action = upsert_param_row(lines_out, guid_to_row, g, n, tip, make_num)\r\n\r\n    if action == \"added\":\r\n        added += 1\r\n        if len(added_sample) < 20:\r\n            added_sample.append({\"ParamName\": n, \"Guid\": g})\r\n    elif action == \"updated\":\r\n        updated += 1\r\n        if len(updated_sample) < 20:\r\n            updated_sample.append({\"ParamName\": n, \"Guid\": g})\r\n    else:\r\n        unchanged += 1\r\n\r\nreport[\"AddedNewParams\"] = int(added)\r\nreport[\"UpdatedExistingParams\"] = int(updated)\r\nreport[\"UnchangedParams\"] = int(unchanged)\r\nreport[\"AddedSample\"] = added_sample\r\nreport[\"UpdatedSample\"] = updated_sample\r\n\r\nfinal_path, warn = safe_write_lines(sp_path, lines_out)\r\nif warn:\r\n    notes.append(warn)\r\nif final_path != sp_path:\r\n    report[\"SharedParamFilePath_AltWritten\"] = final_path\r\n    sp_path = final_path\r\n\r\nreport[\"SharedParamFilePath\"] = sp_path\r\nreport[\"WroteFile\"] = True if os.path.exists(sp_path) else False\r\nreport[\"Notes\"] = notes\r\n\r\nOUT = [sp_path, param_names_out, rev_id_to_param_out, report, param_packet, param_name_to_guid]\r\n",
+      "Engine": "CPython3",
+      "VariableInputPorts": true,
+      "Id": "49c2229a5efc443abc4889179a716e3a",
+      "NodeType": "PythonScriptNode",
+      "Inputs": [
+        {
+          "Id": "394b4d7051cb4e10b59832a69dfe4752",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "e7f188c8b80a477a965f698bc12fa3e8",
+          "Name": "IN[1]",
+          "Description": "Input #1",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "53888dcb5d5f44139a4c843b89ef5438",
+          "Name": "IN[2]",
+          "Description": "Input #2",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "fbb1175268754385a311776f1f7e6dd0",
+          "Name": "IN[3]",
+          "Description": "Input #3",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "ea0f405a7230485db8e1c5701fab9e6a",
+          "Name": "OUT",
+          "Description": "Result of the python script",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Runs an embedded Python script."
+    },
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "Code": "# [py.Revisions-InProject-Data.py]\r\n# V00-00-2026-01-30t1402p\r\n# encoding: utf-8\r\n# Purpose and IO:\r\n#   Purpose:\r\n#     Collect project Revisions and output a stable, schedule-friendly payload\r\n#     for downstream nodes (shared-param writer / binder / stamper / scheduler).\r\n#\r\n#   IN:\r\n#     None\r\n#\r\n#   OUT:\r\n#     OUT[0]=revisionsData (list[dict]) with keys:\r\n#       - Id (int)\r\n#       - SequenceNumber (int)\r\n#       - RevisionNumber (string)\r\n#       - RevisionDate (string)\r\n#       - Description (string)\r\n\r\nimport clr\r\n\r\n#####################################\r\n## 0000_Revit-Imports-And-Context()\r\n#####################################\r\nclr.AddReference(\"RevitServices\")\r\nfrom RevitServices.Persistence import DocumentManager\r\n\r\nclr.AddReference(\"RevitAPI\")\r\nfrom Autodesk.Revit.DB import FilteredElementCollector, Revision\r\n\r\ndoc = DocumentManager.Instance.CurrentDBDocument\r\n\r\n#####################################\r\n## 0100_Utilities()\r\n#####################################\r\ndef safe_str(x):\r\n    \"\"\"Defensive string conversion for Revit/Dynamo types.\"\"\"\r\n    try:\r\n        return \"\" if x is None else str(x)\r\n    except:\r\n        return \"\"\r\n\r\ndef safe_int(x, default=0):\r\n    \"\"\"Defensive int conversion.\"\"\"\r\n    try:\r\n        return int(x)\r\n    except:\r\n        return int(default)\r\n\r\n#####################################\r\n## 0200_Get-RevisionsData()\r\n#####################################\r\ndef get_revisions_data(doc_):\r\n    \"\"\"\r\n    Returns list[dict] ordered by SequenceNumber (stable).\r\n    Keys match downstream nodes: Id, SequenceNumber, RevisionNumber, RevisionDate, Description.\r\n    \"\"\"\r\n    items = []\r\n    revs = list(FilteredElementCollector(doc_).OfClass(Revision).ToElements())\r\n\r\n    for r in revs:\r\n        try:\r\n            rid = r.Id.IntegerValue\r\n        except:\r\n            continue\r\n\r\n        try:\r\n            seq = safe_int(getattr(r, \"SequenceNumber\", 10**9), 10**9)\r\n        except:\r\n            seq = 10**9\r\n\r\n        try:\r\n            rev_num = safe_str(getattr(r, \"RevisionNumber\", \"\"))\r\n        except:\r\n            rev_num = \"\"\r\n\r\n        try:\r\n            rev_date = safe_str(getattr(r, \"RevisionDate\", \"\"))\r\n        except:\r\n            rev_date = \"\"\r\n\r\n        try:\r\n            desc = safe_str(getattr(r, \"Description\", \"\"))\r\n        except:\r\n            desc = \"\"\r\n\r\n        items.append({\r\n            \"Id\": rid,\r\n            \"SequenceNumber\": seq,\r\n            \"RevisionNumber\": rev_num,\r\n            \"RevisionDate\": rev_date,\r\n            \"Description\": desc,\r\n        })\r\n\r\n    try:\r\n        items.sort(key=lambda d: safe_int(d.get(\"SequenceNumber\", 10**9), 10**9))\r\n    except:\r\n        pass\r\n\r\n    return items\r\n\r\n#####################################\r\n## 0900_Main()\r\n#####################################\r\nrevisions_data = get_revisions_data(doc)\r\n\r\nOUT = [revisions_data]\r\n",
+      "Engine": "CPython3",
+      "VariableInputPorts": true,
+      "Id": "cc8a08aeefc84df9830399e4e6afac0d",
+      "NodeType": "PythonScriptNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "95214daafa9d4553ae06010fff9d62e7",
+          "Name": "OUT",
+          "Description": "Result of the python script",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Runs an embedded Python script."
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Watch, CoreNodeModels",
+      "WatchWidth": 469.6,
+      "WatchHeight": 1653.6,
+      "Id": "d5a9c70759cd4dd1b060510d89eebfb2",
+      "NodeType": "ExtensionNode",
+      "Inputs": [
+        {
+          "Id": "2f9618834cd54d5d927bc330b4d60a11",
+          "Name": "",
+          "Description": "Node to show output from",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "82cbca817c3349bfa0089b6f5b460f49",
+          "Name": "",
+          "Description": "Node output",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Visualizes a node's output"
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Input.BoolSelector, CoreNodeModels",
+      "Id": "3ebe60ed0d2a405f9d233de6a27ce235",
+      "NodeType": "BooleanInputNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "f6052587b9814d3ea0f53f775492f212",
+          "Name": "",
+          "Description": "Boolean",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Enables selection between True and False",
+      "InputValue": true
+    },
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "Code": "# [py.RevParams-PurgeLikely.py]\r\n# V00-04-2026-01-31t0000p\r\n# encoding: utf-8\r\n# Purpose:\r\n#   Purge ONLY what needs purging:\r\n#     - remove bindings + delete ParameterElements when:\r\n#         (A) name matches our rule-set AND\r\n#         (B) GUID mismatches expected OR UserModifiable mismatches expected\r\n#   Pass-through stream for downstream bind/stamp nodes.\r\n\r\nimport clr\r\nimport re\r\nfrom datetime import datetime\r\n\r\n#####################################\r\n## 0000_Revit-Imports-And-Context()\r\n#####################################\r\nclr.AddReference(\"RevitServices\")\r\nfrom RevitServices.Persistence import DocumentManager\r\n\r\nclr.AddReference(\"RevitAPI\")\r\nfrom Autodesk.Revit.DB import (\r\n    BuiltInCategory,\r\n    ElementId,\r\n    FilteredElementCollector,\r\n    ParameterElement,\r\n    SharedParameterElement,\r\n    Transaction,\r\n    TransactionGroup,\r\n    ViewSheet,\r\n)\r\n\r\ndoc = DocumentManager.Instance.CurrentDBDocument\r\n\r\n#####################################\r\n## 0001_Read-Inputs()\r\n#####################################\r\nwrite_out = IN[0] if IN and len(IN) > 0 else None\r\n\r\n#####################################\r\n## 0100_Utilities()\r\n#####################################\r\ndef safe_str(x):\r\n    try:\r\n        return \"\" if x is None else str(x)\r\n    except:\r\n        return \"\"\r\n\r\ndef _unwrap_singleton_list(obj):\r\n    try:\r\n        if isinstance(obj, (list, tuple)) and len(obj) == 1:\r\n            return obj[0]\r\n    except:\r\n        pass\r\n    return obj\r\n\r\ndef _as_list(x):\r\n    if x is None:\r\n        return []\r\n    try:\r\n        return list(x)\r\n    except:\r\n        return []\r\n\r\n#####################################\r\n## 0110_Stream-Extraction\r\n#####################################\r\ndef extract_stream_packet(obj):\r\n    \"\"\"\r\n    Supports:\r\n      - dict packet\r\n      - writer list packet:\r\n          [0]=sp_path, [1]=ParamNames, [2]=RevIdToParam, [3]=Report, [4]=ParamPacket, [5]=ParamNameToGuid\r\n    \"\"\"\r\n    obj = _unwrap_singleton_list(obj)\r\n\r\n    sp_path = \"\"\r\n    param_names = []\r\n    rev_id_to_param = {}\r\n    rev_prefix = \"\"\r\n    group_assignment = \"Text\"\r\n    sp_group_name = \"DynamoProjectLocal\"\r\n    make_non_user_mod = None\r\n    param_packet = None\r\n    param_name_to_guid = None\r\n\r\n    if isinstance(obj, dict):\r\n        sp_path = safe_str(obj.get(\"SharedParamFilePath\") or obj.get(\"FilePath\") or \"\")\r\n        sp_group_name = safe_str(obj.get(\"SharedParamGroupName\") or obj.get(\"GroupNameInFile\") or sp_group_name)\r\n        param_names = obj.get(\"ParamNames\") or []\r\n        rev_id_to_param = obj.get(\"RevIdToParam\") or {}\r\n        rev_prefix = safe_str(obj.get(\"RevPrefix\") or obj.get(\"revPrefix\") or \"\")\r\n        group_assignment = obj.get(\"ParamGroupAssignment\") or obj.get(\"ParamGroupAssignment_Input\") or group_assignment\r\n\r\n        # optional new fields\r\n        make_non_user_mod = obj.get(\"MakeNonUserModifiable\")\r\n        param_packet = obj.get(\"ParamPacket\")\r\n        param_name_to_guid = obj.get(\"ParamNameToGuid\")\r\n\r\n        # sometimes stored in Report subdict\r\n        rep = obj.get(\"Report\")\r\n        if isinstance(rep, dict):\r\n            make_non_user_mod = rep.get(\"MakeNonUserModifiable\", make_non_user_mod)\r\n\r\n    elif isinstance(obj, (list, tuple)):\r\n        if len(obj) >= 1 and isinstance(obj[0], str):\r\n            sp_path = safe_str(obj[0])\r\n        if len(obj) >= 2 and isinstance(obj[1], list):\r\n            param_names = obj[1]\r\n        if len(obj) >= 3 and isinstance(obj[2], dict):\r\n            rev_id_to_param = obj[2]\r\n        if len(obj) >= 4 and isinstance(obj[3], dict):\r\n            rep = obj[3]\r\n            rev_prefix = safe_str(rep.get(\"RevPrefix\") or rep.get(\"RevPrefix_Stream\") or \"\")\r\n            group_assignment = rep.get(\"ParamGroupAssignment_Input\") or rep.get(\"ParamGroupAssignment\") or group_assignment\r\n            sp_group_name = safe_str(rep.get(\"GroupNameInFile\") or rep.get(\"SharedParamGroupName\") or sp_group_name)\r\n            make_non_user_mod = rep.get(\"MakeNonUserModifiable\", make_non_user_mod)\r\n            sp_path = sp_path or safe_str(rep.get(\"SharedParamFilePath\") or \"\")\r\n\r\n        if len(obj) >= 5 and isinstance(obj[4], list):\r\n            param_packet = obj[4]\r\n        if len(obj) >= 6 and isinstance(obj[5], dict):\r\n            param_name_to_guid = obj[5]\r\n\r\n    # normalize param names\r\n    try:\r\n        param_names = [safe_str(x) for x in param_names if x is not None and safe_str(x).strip()]\r\n    except:\r\n        param_names = []\r\n\r\n    # normalize RevIdToParam passthrough keys to strings for Dynamo safety\r\n    rev_map_out = {}\r\n    try:\r\n        for k, v in (rev_id_to_param or {}).items():\r\n            try:\r\n                rev_map_out[str(int(k))] = safe_str(v)\r\n            except:\r\n                rev_map_out[safe_str(k)] = safe_str(v)\r\n    except:\r\n        rev_map_out = {}\r\n\r\n    return {\r\n        \"SharedParamFilePath\": sp_path,\r\n        \"SharedParamGroupName\": sp_group_name,\r\n        \"ParamNames\": param_names,\r\n        \"RevIdToParam\": rev_map_out,\r\n        \"RevPrefix\": (rev_prefix or \"REV\").strip(),\r\n        \"ParamGroupAssignment\": group_assignment,\r\n        \"MakeNonUserModifiable\": bool(make_non_user_mod) if make_non_user_mod is not None else None,\r\n        \"ParamPacket\": param_packet,\r\n        \"ParamNameToGuid\": param_name_to_guid,\r\n    }\r\n\r\n#####################################\r\n## 0200_Expected GUID map + expected UserModifiable\r\n#####################################\r\ndef build_expected_guid_map(packet):\r\n    # Prefer ParamNameToGuid, else ParamPacket, else empty\r\n    name_to_guid = {}\r\n\r\n    m = packet.get(\"ParamNameToGuid\")\r\n    if isinstance(m, dict) and m:\r\n        for k, v in m.items():\r\n            ks = safe_str(k).strip()\r\n            vs = safe_str(v).strip().upper()\r\n            if ks and vs:\r\n                name_to_guid[ks] = vs\r\n        return name_to_guid\r\n\r\n    pp = packet.get(\"ParamPacket\")\r\n    if isinstance(pp, list):\r\n        for row in pp:\r\n            if not isinstance(row, dict):\r\n                continue\r\n            pname = safe_str(row.get(\"ParamName\")).strip()\r\n            guid = safe_str(row.get(\"ParamGuid\")).strip().upper()\r\n            if pname and guid:\r\n                name_to_guid[pname] = guid\r\n\r\n    return name_to_guid\r\n\r\ndef get_expected_user_modifiable(packet):\r\n    # expected UserModifiable = NOT MakeNonUserModifiable\r\n    mnm = packet.get(\"MakeNonUserModifiable\")\r\n    if mnm is None:\r\n        return None  # unknown\r\n    return (not bool(mnm))\r\n\r\n#####################################\r\n## 0300_Model Inspection helpers\r\n#####################################\r\ndef get_current_usermod_from_any_sheet(pname):\r\n    \"\"\"\r\n    Try to read Definition.UserModifiable from a real parameter instance on a sheet.\r\n    Returns: True/False/None (None if not detectable or not present).\r\n    \"\"\"\r\n    try:\r\n        sh = FilteredElementCollector(doc).OfClass(ViewSheet).FirstElement()\r\n        if sh is None:\r\n            return None\r\n    except:\r\n        return None\r\n\r\n    # Better: scan a few sheets until we find this parameter\r\n    try:\r\n        sheets = list(FilteredElementCollector(doc).OfClass(ViewSheet).ToElements())\r\n    except:\r\n        sheets = []\r\n\r\n    for sh in sheets[:30]:\r\n        try:\r\n            p = sh.LookupParameter(pname)\r\n        except:\r\n            p = None\r\n        if p is None:\r\n            continue\r\n\r\n        try:\r\n            d = p.Definition\r\n            # many versions have this:\r\n            if hasattr(d, \"UserModifiable\"):\r\n                return bool(d.UserModifiable)\r\n        except:\r\n            return None\r\n\r\n    return None\r\n\r\ndef get_existing_sharedparam_element_by_name(pname):\r\n    \"\"\"\r\n    Returns SharedParameterElement if found by Name, else None.\r\n    \"\"\"\r\n    try:\r\n        for pe in FilteredElementCollector(doc).OfClass(ParameterElement).ToElements():\r\n            try:\r\n                if safe_str(pe.Name) == pname:\r\n                    # only shared parameters have GuidValue\r\n                    if isinstance(pe, SharedParameterElement):\r\n                        return pe\r\n            except:\r\n                pass\r\n    except:\r\n        pass\r\n    return None\r\n\r\n#####################################\r\n## 0400_Matching rules for candidate names\r\n#####################################\r\ndef build_candidate_matcher(rev_prefix, param_names):\r\n    prefix = safe_str(rev_prefix).strip()\r\n    prefix_no_dot = prefix[:-1] if prefix.endswith(\".\") else prefix\r\n    param_name_set = set([safe_str(x) for x in (param_names or []) if safe_str(x)])\r\n    rx_date8 = re.compile(r\"\\d{8}\")\r\n\r\n    rx_revword = None\r\n    try:\r\n        if prefix_no_dot:\r\n            rx_revword = re.compile(r\"^%s.*revision\" % re.escape(prefix_no_dot), re.IGNORECASE)\r\n    except:\r\n        rx_revword = None\r\n\r\n    def is_candidate(n):\r\n        n = safe_str(n).strip()\r\n        if not n:\r\n            return False\r\n        if n in param_name_set:\r\n            return True\r\n        if prefix and n.startswith(prefix) and rx_date8.search(n):\r\n            return True\r\n        if rx_revword is not None and rx_revword.search(n):\r\n            return True\r\n        return False\r\n\r\n    return is_candidate\r\n\r\n#####################################\r\n## 0500_Purge operations\r\n#####################################\r\ndef remove_bindings_for_names(doc_, names_set):\r\n    removed = 0\r\n    matched = []\r\n    try:\r\n        bm = doc_.ParameterBindings\r\n        it = bm.ForwardIterator()\r\n        it.Reset()\r\n\r\n        defs_to_remove = []\r\n        while it.MoveNext():\r\n            try:\r\n                d = it.Key\r\n                if d and safe_str(d.Name) in names_set:\r\n                    defs_to_remove.append(d)\r\n                    if len(matched) < 30:\r\n                        matched.append(safe_str(d.Name))\r\n            except:\r\n                pass\r\n\r\n        for d in defs_to_remove:\r\n            try:\r\n                if bm.Remove(d):\r\n                    removed += 1\r\n            except:\r\n                pass\r\n    except:\r\n        pass\r\n\r\n    return removed, matched\r\n\r\ndef delete_param_elements_for_names(doc_, names_set):\r\n    deleted = 0\r\n    matched = []\r\n    ids = []\r\n    try:\r\n        for pe in FilteredElementCollector(doc_).OfClass(ParameterElement).ToElements():\r\n            try:\r\n                n = safe_str(pe.Name)\r\n                if n in names_set:\r\n                    ids.append(pe.Id)\r\n                    if len(matched) < 30:\r\n                        matched.append(n)\r\n            except:\r\n                pass\r\n    except:\r\n        pass\r\n\r\n    for eid in ids:\r\n        try:\r\n            doc_.Delete(eid)\r\n            deleted += 1\r\n        except:\r\n            pass\r\n\r\n    return deleted, matched\r\n\r\n#####################################\r\n## 0900_Main\r\n#####################################\r\nruntime_stamp = datetime.now().strftime(\"%Y-%m-%dT%H:%M:%S\")\r\npacket = extract_stream_packet(write_out)\r\n\r\nparam_names = packet[\"ParamNames\"]\r\nrev_prefix = packet[\"RevPrefix\"]\r\n\r\nexpected_guid_map = build_expected_guid_map(packet)\r\nexpected_user_mod = get_expected_user_modifiable(packet)  # True/False/None\r\n\r\n# Decide which names MUST be purged\r\nis_candidate = build_candidate_matcher(rev_prefix, param_names)\r\n\r\npurge_names = set()\r\nkeep_names = set()\r\nreasons = []\r\n\r\nfor pname in param_names:\r\n    if not is_candidate(pname):\r\n        continue\r\n\r\n    exp_guid = safe_str(expected_guid_map.get(pname, \"\")).upper()\r\n    spe = get_existing_sharedparam_element_by_name(pname)\r\n\r\n    if spe is None:\r\n        # doesn't exist -> nothing to purge\r\n        keep_names.add(pname)\r\n        continue\r\n\r\n    # GUID check\r\n    cur_guid = \"\"\r\n    try:\r\n        cur_guid = safe_str(spe.GuidValue).upper()\r\n    except:\r\n        cur_guid = \"\"\r\n\r\n    guid_mismatch = (exp_guid and cur_guid and exp_guid != cur_guid)\r\n\r\n    # UserModifiable check (best effort)\r\n    cur_user_mod = get_current_usermod_from_any_sheet(pname)  # True/False/None\r\n    usermod_mismatch = False\r\n    if expected_user_mod is not None and cur_user_mod is not None:\r\n        usermod_mismatch = (bool(expected_user_mod) != bool(cur_user_mod))\r\n\r\n    # If we cannot detect current user-mod state, but user requested a state,\r\n    # and the parameter exists, be conservative and purge when flipping matters:\r\n    # We treat \"expected_user_mod is not None and cur_user_mod is None\" as \"unknown\".\r\n    # If you want \"always purge when unknown\", keep this True:\r\n    unknown_usermod_needs_recreate = (expected_user_mod is not None and cur_user_mod is None)\r\n\r\n    if guid_mismatch or usermod_mismatch or unknown_usermod_needs_recreate:\r\n        purge_names.add(pname)\r\n        reasons.append({\r\n            \"Param\": pname,\r\n            \"GuidExpected\": exp_guid,\r\n            \"GuidCurrent\": cur_guid,\r\n            \"GuidMismatch\": guid_mismatch,\r\n            \"UserModExpected\": expected_user_mod,\r\n            \"UserModCurrent\": cur_user_mod,\r\n            \"UserModMismatch\": usermod_mismatch,\r\n            \"UserModUnknownForced\": unknown_usermod_needs_recreate,\r\n        })\r\n    else:\r\n        keep_names.add(pname)\r\n\r\nremoved_bindings = 0\r\ndeleted_param_elements = 0\r\nmatched_binding_names = []\r\nmatched_param_element_names = []\r\n\r\ntg = TransactionGroup(doc, \"RevParams Purge (GUID/UserMod aware)\")\r\ntry:\r\n    tg.Start()\r\n\r\n    t1 = Transaction(doc, \"Purge Bindings (mismatched only)\")\r\n    t1.Start()\r\n    removed_bindings, matched_binding_names = remove_bindings_for_names(doc, purge_names)\r\n    t1.Commit()\r\n\r\n    t2 = Transaction(doc, \"Delete ParameterElements (mismatched only)\")\r\n    t2.Start()\r\n    deleted_param_elements, matched_param_element_names = delete_param_elements_for_names(doc, purge_names)\r\n    t2.Commit()\r\n\r\n    tg.Assimilate()\r\n\r\n    OUT = {\r\n        # passthrough\r\n        \"SharedParamFilePath\": packet[\"SharedParamFilePath\"],\r\n        \"SharedParamGroupName\": packet[\"SharedParamGroupName\"],\r\n        \"ParamNames\": param_names,\r\n        \"RevIdToParam\": packet[\"RevIdToParam\"],\r\n        \"RevPrefix\": rev_prefix,\r\n        \"ParamGroupAssignment\": packet[\"ParamGroupAssignment\"],\r\n        \"MakeNonUserModifiable\": packet[\"MakeNonUserModifiable\"],\r\n        \"ParamNameToGuid\": expected_guid_map,\r\n\r\n        # purge report\r\n        \"RuntimeStamp\": runtime_stamp,\r\n        \"PurgedParamNames\": sorted(list(purge_names)),\r\n        \"KeptParamNames\": sorted(list(keep_names)),\r\n        \"RemovedBindings\": removed_bindings,\r\n        \"DeletedParameterElements\": deleted_param_elements,\r\n        \"MatchedBindingNamesSample\": matched_binding_names,\r\n        \"MatchedParamElementNamesSample\": matched_param_element_names,\r\n        \"MismatchReasonsSample\": reasons[:25],\r\n        \"Report\": {\r\n            \"RuntimeStamp\": runtime_stamp,\r\n            \"ExpectedUserModifiable\": expected_user_mod,\r\n            \"ParamNamesCount\": len(param_names),\r\n            \"PurgeCount\": len(purge_names),\r\n            \"KeepCount\": len(keep_names),\r\n            \"RemovedBindings\": removed_bindings,\r\n            \"DeletedParameterElements\": deleted_param_elements,\r\n        },\r\n        \"Notes\": [],\r\n    }\r\n\r\nexcept Exception as ex:\r\n    try:\r\n        if tg.HasStarted() and not tg.HasEnded():\r\n            tg.RollBack()\r\n    except:\r\n        pass\r\n\r\n    OUT = {\r\n        \"SharedParamFilePath\": packet[\"SharedParamFilePath\"],\r\n        \"SharedParamGroupName\": packet[\"SharedParamGroupName\"],\r\n        \"ParamNames\": param_names,\r\n        \"RevIdToParam\": packet[\"RevIdToParam\"],\r\n        \"RevPrefix\": rev_prefix,\r\n        \"ParamGroupAssignment\": packet[\"ParamGroupAssignment\"],\r\n        \"MakeNonUserModifiable\": packet[\"MakeNonUserModifiable\"],\r\n        \"ParamNameToGuid\": expected_guid_map,\r\n        \"RuntimeStamp\": runtime_stamp,\r\n        \"error\": safe_str(ex),\r\n    }\r\n",
+      "Engine": "CPython3",
+      "VariableInputPorts": true,
+      "Id": "57a4aaff8484485ba7699d2b80ffc86f",
+      "NodeType": "PythonScriptNode",
+      "Inputs": [
+        {
+          "Id": "ceea8341d1684b9bb50fc5734dc020ee",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "b6bcf092ee3e4f7ebfb98dbc47a0cd8d",
+          "Name": "OUT",
+          "Description": "Result of the python script",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Runs an embedded Python script."
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Watch, CoreNodeModels",
+      "WatchWidth": 492.8,
+      "WatchHeight": 1363.2,
+      "Id": "ef34eb46ecf94e9d90139b88ea20b584",
+      "NodeType": "ExtensionNode",
+      "Inputs": [
+        {
+          "Id": "504f068f02ba4f909535ab6562cd583f",
+          "Name": "",
+          "Description": "Node to show output from",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "3ad90e263f8548238791139ce2e5bc26",
+          "Name": "",
+          "Description": "Node output",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Visualizes a node's output"
+    },
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "Code": "# [py.RevParams-BindToSheets.py]\r\n# V00-03-2026-01-31t1205p\r\n# encoding: utf-8\r\n# Purpose and IO:\r\n#   Binds a provided list of Shared Parameter DEFINITIONS (by name) to OST_Sheets as INSTANCE parameters.\r\n#   Accepts packet from EITHER:\r\n#     - py.RevParams-WriteSharedParamFile.py (LIST-style)\r\n#     - py.RevParams-PurgeLikely.py (DICT-style passthrough)\r\n#\r\n#   IMPORTANT:\r\n#     - This node DOES NOT stamp values.\r\n#     - This node PASSES THROUGH ParamNames + RevIdToParam + SharedParamFilePath so the next node can stamp.\r\n#\r\n#   RELIABILITY UPDATE:\r\n#     - After freeze/thaw, Revit can \"no-op\" Insert/ReInsert if an existing bound Definition (same Name)\r\n#       is stale or mismatched. We now fallback to:\r\n#         (1) find bound Definition by NAME\r\n#         (2) bm.Remove(oldDef)\r\n#         (3) Insert/ReInsert using ext_def from shared param file\r\n#\r\n# Inputs:\r\n#   IN[0]=UpstreamOut (dict/list)\r\n#   IN[1]=ParamGroupAssignmentOverride (string or bool) OPTIONAL\r\n#\r\n# Outputs:\r\n#   OUT=dict packet:\r\n#     SharedParamFilePath, SharedParamGroupName, ParamGroupAssignment, RevPrefix,\r\n#     ParamNames, RevIdToParam,\r\n#     Report, Debug, Notes\r\n\r\nimport clr\r\nimport os\r\nfrom datetime import datetime\r\n\r\n#####################################\r\n## 0000_Revit-Imports-And-Context()\r\n#####################################\r\nclr.AddReference(\"RevitServices\")\r\nfrom RevitServices.Persistence import DocumentManager\r\nfrom RevitServices.Transactions import TransactionManager\r\n\r\nclr.AddReference(\"RevitAPI\")\r\nfrom Autodesk.Revit.DB import (\r\n    BuiltInCategory,\r\n    Category,\r\n    ElementId,\r\n)\r\n\r\ntry:\r\n    from Autodesk.Revit.DB import GroupTypeId\r\nexcept:\r\n    GroupTypeId = None\r\n\r\ntry:\r\n    from Autodesk.Revit.DB import BuiltInParameterGroup\r\nexcept:\r\n    BuiltInParameterGroup = None\r\n\r\ndoc = DocumentManager.Instance.CurrentDBDocument\r\napp = doc.Application\r\n\r\n#####################################\r\n## 0001_Read-Inputs()\r\n#####################################\r\nupstream_out = IN[0] if IN and len(IN) > 0 else None\r\ngroup_override = IN[1] if IN and len(IN) > 1 and IN[1] is not None else None\r\n\r\n#####################################\r\n## 0100_Utilities()\r\n#####################################\r\ndef safe_str(x):\r\n    \"\"\"Comment: defensive string conversion for Dynamo/Revit mixed types.\"\"\"\r\n    try:\r\n        return \"\" if x is None else str(x)\r\n    except:\r\n        return \"\"\r\n\r\ndef _unwrap_singleton_list(obj):\r\n    \"\"\"Comment: unwrap one level if Dynamo wraps as [ [packet] ].\"\"\"\r\n    try:\r\n        if isinstance(obj, (list, tuple)) and len(obj) == 1:\r\n            return obj[0]\r\n    except:\r\n        pass\r\n    return obj\r\n\r\ndef _norm_group_name(name):\r\n    \"\"\"Comment: normalize group name input for mapping.\"\"\"\r\n    n = safe_str(name).strip().lower()\r\n    n = n.replace(\"_\", \" \").replace(\"-\", \" \")\r\n    return \" \".join(n.split())\r\n\r\ndef resolve_param_group_token(group_input_value):\r\n    \"\"\"\r\n    Comment: map friendly group string (or legacy bool) to a group token.\r\n    Returns (token, resolved_label, normalized_name).\r\n    \"\"\"\r\n    if isinstance(group_input_value, bool):\r\n        norm = \"identity data\" if bool(group_input_value) else \"other\"\r\n    else:\r\n        norm = _norm_group_name(group_input_value) or \"text\"\r\n\r\n    friendly_to_group_typeid = {\r\n        \"identity data\": \"IdentityData\",\r\n        \"identity\": \"IdentityData\",\r\n        \"text\": \"Text\",\r\n        \"data\": \"Data\",\r\n        \"other\": \"Other\",\r\n        \"constraints\": \"Constraints\",\r\n        \"graphics\": \"Graphics\",\r\n        \"phasing\": \"Phasing\",\r\n        \"materials\": \"Materials\",\r\n        \"general\": \"General\",\r\n    }\r\n\r\n    friendly_to_bipg = {\r\n        \"identity data\": \"PG_IDENTITY_DATA\",\r\n        \"identity\": \"PG_IDENTITY_DATA\",\r\n        \"text\": \"PG_TEXT\",\r\n        \"data\": \"PG_DATA\",\r\n        \"other\": \"PG_OTHER\",\r\n        \"constraints\": \"PG_CONSTRAINTS\",\r\n        \"graphics\": \"PG_GRAPHICS\",\r\n        \"phasing\": \"PG_PHASING\",\r\n        \"materials\": \"PG_MATERIALS\",\r\n        \"general\": \"PG_GENERAL\",\r\n    }\r\n\r\n    if GroupTypeId is not None:\r\n        member = friendly_to_group_typeid.get(norm)\r\n        if member and hasattr(GroupTypeId, member):\r\n            return getattr(GroupTypeId, member), member, norm\r\n\r\n    if BuiltInParameterGroup is not None:\r\n        member = friendly_to_bipg.get(norm)\r\n        if member and hasattr(BuiltInParameterGroup, member):\r\n            return getattr(BuiltInParameterGroup, member), member, norm\r\n\r\n    return None, \"UNRESOLVED\", norm\r\n\r\ndef extract_bind_packet(obj):\r\n    \"\"\"\r\n    Comment:\r\n      Supports BOTH:\r\n        (A) dict packet with SharedParamFilePath + ParamNames + ParamGroupAssignment\r\n        (B) writer list packet:\r\n            [0]=SharedParamFilePath (string)\r\n            [1]=ParamNames (list)\r\n            [2]=RevIdToParam (dict)\r\n            [3]=Report (dict)\r\n    Returns:\r\n      sp_path, param_names, rev_id_to_param, group_assignment, sp_group_name, rev_prefix\r\n    \"\"\"\r\n    obj = _unwrap_singleton_list(obj)\r\n\r\n    sp_path = \"\"\r\n    param_names = []\r\n    rev_id_to_param = {}\r\n    group_assignment = \"Text\"\r\n    sp_group_name = \"DynamoProjectLocal\"\r\n    rev_prefix = \"\"\r\n\r\n    if isinstance(obj, dict):\r\n        sp_path = safe_str(obj.get(\"SharedParamFilePath\") or obj.get(\"sharedParamFile\") or obj.get(\"FilePath\"))\r\n        param_names = obj.get(\"ParamNames\") or []\r\n        rev_id_to_param = obj.get(\"RevIdToParam\") or {}\r\n        group_assignment = (\r\n            obj.get(\"ParamGroupAssignment\")\r\n            or obj.get(\"ParamGroupAssignment_Input\")\r\n            or obj.get(\"ParamGroupName\")\r\n            or group_assignment\r\n        )\r\n        sp_group_name = safe_str(obj.get(\"SharedParamGroupName\") or obj.get(\"GroupNameInFile\") or obj.get(\"SharedParamGroup\") or sp_group_name)\r\n        rev_prefix = safe_str(obj.get(\"RevPrefix\") or obj.get(\"revPrefix\") or \"\")\r\n\r\n    elif isinstance(obj, (list, tuple)):\r\n        if len(obj) >= 1 and isinstance(obj[0], str) and obj[0].lower().endswith(\".txt\"):\r\n            sp_path = safe_str(obj[0])\r\n\r\n        if len(obj) >= 2 and isinstance(obj[1], list):\r\n            param_names = obj[1]\r\n\r\n        if len(obj) >= 3 and isinstance(obj[2], dict):\r\n            rev_id_to_param = obj[2]\r\n\r\n        if len(obj) >= 4 and isinstance(obj[3], dict):\r\n            rep = obj[3]\r\n            sp_path = sp_path or safe_str(rep.get(\"SharedParamFilePath\") or \"\")\r\n            rev_prefix = safe_str(rep.get(\"RevPrefix\") or rep.get(\"RevPrefix_Stream\") or rev_prefix)\r\n            group_assignment = (\r\n                rep.get(\"ParamGroupAssignment_Input\")\r\n                or rep.get(\"ParamGroupAssignment\")\r\n                or rep.get(\"ParamGroupName\")\r\n                or group_assignment\r\n            )\r\n            sp_group_name = safe_str(rep.get(\"GroupNameInFile\") or rep.get(\"SharedParamGroupName\") or sp_group_name)\r\n\r\n    # normalize\r\n    try:\r\n        param_names = [safe_str(x) for x in param_names if x is not None and safe_str(x).strip()]\r\n    except:\r\n        param_names = []\r\n\r\n    # normalize rev map keys to strings for Dynamo safety\r\n    rev_map_out = {}\r\n    try:\r\n        for k, v in (rev_id_to_param or {}).items():\r\n            try:\r\n                rev_map_out[str(int(k))] = safe_str(v)\r\n            except:\r\n                rev_map_out[safe_str(k)] = safe_str(v)\r\n    except:\r\n        rev_map_out = {}\r\n\r\n    return safe_str(sp_path), param_names, rev_map_out, group_assignment, (safe_str(sp_group_name) or \"DynamoProjectLocal\"), safe_str(rev_prefix)\r\n\r\n#####################################\r\n## 0200_Bind-Helpers()\r\n#####################################\r\ndef open_shared_param_file_force(app_, sp_path, notes_list):\r\n    \"\"\"\r\n    Comment:\r\n      Force-open the shared parameter file even after freeze/thaw.\r\n      Clearing SharedParametersFilename first helps flush stale file handles.\r\n    \"\"\"\r\n    old_sp = app_.SharedParametersFilename\r\n    sp_file = None\r\n    try:\r\n        try:\r\n            app_.SharedParametersFilename = \"\"\r\n        except:\r\n            pass\r\n        app_.SharedParametersFilename = sp_path\r\n        sp_file = app_.OpenSharedParameterFile()\r\n    finally:\r\n        try:\r\n            app_.SharedParametersFilename = old_sp\r\n        except:\r\n            notes_list.append(\"Warning: failed to restore SharedParametersFilename.\")\r\n    return sp_file\r\n\r\ndef find_bound_definition_by_name(doc_, target_name):\r\n    \"\"\"\r\n    Comment:\r\n      Search BindingMap for a Definition whose Name == target_name.\r\n      Returns the Definition object or None.\r\n    \"\"\"\r\n    try:\r\n        bm = doc_.ParameterBindings\r\n        it = bm.ForwardIterator()\r\n        it.Reset()\r\n        while it.MoveNext():\r\n            try:\r\n                d = it.Key\r\n                if d and safe_str(d.Name) == target_name:\r\n                    return d\r\n            except:\r\n                pass\r\n    except:\r\n        pass\r\n    return None\r\n\r\ndef bind_param_to_sheets_robust(doc_, app_, ext_def, group_token, pname, debug_counts, fail_list):\r\n    \"\"\"\r\n    Comment:\r\n      Robust binder:\r\n        1) Insert\r\n        2) ReInsert\r\n        3) Remove old def by name, then Insert\r\n        4) Remove old def by name, then ReInsert\r\n    \"\"\"\r\n    cats = app_.Create.NewCategorySet()\r\n    sheets_cat = Category.GetCategory(doc_, BuiltInCategory.OST_Sheets)\r\n    cats.Insert(sheets_cat)\r\n    binding = app_.Create.NewInstanceBinding(cats)\r\n    bm = doc_.ParameterBindings\r\n\r\n    # 1) Insert\r\n    try:\r\n        if bm.Insert(ext_def, binding, group_token):\r\n            debug_counts[\"InsertOK\"] += 1\r\n            return True\r\n    except:\r\n        pass\r\n\r\n    # 2) ReInsert\r\n    try:\r\n        if bm.ReInsert(ext_def, binding, group_token):\r\n            debug_counts[\"ReInsertOK\"] += 1\r\n            return True\r\n    except:\r\n        pass\r\n\r\n    # 3/4) Remove old by name and retry\r\n    old_def = find_bound_definition_by_name(doc_, pname)\r\n    if old_def is not None:\r\n        try:\r\n            bm.Remove(old_def)\r\n            debug_counts[\"RemovedOldByName\"] += 1\r\n        except:\r\n            pass\r\n\r\n        try:\r\n            if bm.Insert(ext_def, binding, group_token):\r\n                debug_counts[\"RemoveThenInsertOK\"] += 1\r\n                return True\r\n        except:\r\n            pass\r\n\r\n        try:\r\n            if bm.ReInsert(ext_def, binding, group_token):\r\n                debug_counts[\"RemoveThenReInsertOK\"] += 1\r\n                return True\r\n        except:\r\n            pass\r\n\r\n    fail_list.append({\"Param\": pname, \"Reason\": \"Insert/ReInsert failed (even after RemoveByName fallback).\"})\r\n    return False\r\n\r\n#####################################\r\n## 0900_Main()\r\n#####################################\r\nnotes = []\r\ndebug = {}\r\nruntime_stamp = datetime.now().strftime(\"%Y-%m-%dT%H:%M:%S\")\r\n\r\nsp_path, param_names, rev_id_to_param_out, group_assignment_stream, sp_group_name, rev_prefix = extract_bind_packet(upstream_out)\r\ngroup_assignment = group_override if group_override is not None else group_assignment_stream\r\ngroup_token, group_label, group_norm = resolve_param_group_token(group_assignment)\r\n\r\ndebug[\"Extracted\"] = {\r\n    \"SharedParamFilePath\": sp_path,\r\n    \"SharedParamGroupName\": sp_group_name,\r\n    \"ParamNamesCount\": len(param_names),\r\n    \"RevIdToParamCount\": len(rev_id_to_param_out),\r\n    \"RevPrefix\": rev_prefix,\r\n    \"ParamGroupAssignment_Stream\": safe_str(group_assignment_stream),\r\n    \"ParamGroupAssignment_Final\": safe_str(group_assignment),\r\n}\r\n\r\n# basic guards\r\nif not sp_path or not os.path.exists(sp_path):\r\n    OUT = {\r\n        \"SharedParamFilePath\": sp_path,\r\n        \"SharedParamGroupName\": sp_group_name,\r\n        \"ParamGroupAssignment\": safe_str(group_assignment),\r\n        \"RevPrefix\": rev_prefix,\r\n        \"ParamNames\": param_names,\r\n        \"RevIdToParam\": rev_id_to_param_out,\r\n        \"RuntimeStamp\": runtime_stamp,\r\n        \"Report\": {\"error\": \"SharedParamFilePath missing or file does not exist.\", \"Path\": safe_str(sp_path)},\r\n        \"Debug\": debug,\r\n        \"Notes\": notes,\r\n    }\r\n\r\nelif not param_names:\r\n    OUT = {\r\n        \"SharedParamFilePath\": sp_path,\r\n        \"SharedParamGroupName\": sp_group_name,\r\n        \"ParamGroupAssignment\": safe_str(group_assignment),\r\n        \"RevPrefix\": rev_prefix,\r\n        \"ParamNames\": param_names,\r\n        \"RevIdToParam\": rev_id_to_param_out,\r\n        \"RuntimeStamp\": runtime_stamp,\r\n        \"Report\": {\"error\": \"ParamNames missing/empty from stream.\"},\r\n        \"Debug\": debug,\r\n        \"Notes\": notes,\r\n    }\r\n\r\nelif group_token is None:\r\n    OUT = {\r\n        \"SharedParamFilePath\": sp_path,\r\n        \"SharedParamGroupName\": sp_group_name,\r\n        \"ParamGroupAssignment\": safe_str(group_assignment),\r\n        \"RevPrefix\": rev_prefix,\r\n        \"ParamNames\": param_names,\r\n        \"RevIdToParam\": rev_id_to_param_out,\r\n        \"RuntimeStamp\": runtime_stamp,\r\n        \"Report\": {\r\n            \"error\": \"Could not resolve a valid parameter group token.\",\r\n            \"ParamGroupResolved\": group_label,\r\n            \"ParamGroupNormalized\": group_norm,\r\n        },\r\n        \"Debug\": debug,\r\n        \"Notes\": notes,\r\n    }\r\n\r\nelse:\r\n    failed = []\r\n    bound_count = 0\r\n    counts = {\"InsertOK\": 0, \"ReInsertOK\": 0, \"RemovedOldByName\": 0, \"RemoveThenInsertOK\": 0, \"RemoveThenReInsertOK\": 0}\r\n\r\n    try:\r\n        TransactionManager.Instance.EnsureInTransaction(doc)\r\n\r\n        # Force open shared parameter file (flush stale handles after freeze/thaw)\r\n        sp_file = open_shared_param_file_force(app, sp_path, notes)\r\n\r\n        if sp_file is None:\r\n            failed.append({\"error\": \"Could not open shared parameter file.\", \"path\": sp_path})\r\n        else:\r\n            try:\r\n                sp_group = sp_file.Groups.get_Item(sp_group_name)\r\n            except:\r\n                sp_group = None\r\n\r\n            if sp_group is None:\r\n                failed.append({\"error\": \"Shared parameter GROUP not found in file.\", \"group\": sp_group_name})\r\n            else:\r\n                for pname in param_names:\r\n                    pname_s = safe_str(pname)\r\n                    try:\r\n                        ext_def = sp_group.Definitions.get_Item(pname_s)\r\n                    except:\r\n                        ext_def = None\r\n\r\n                    if ext_def is None:\r\n                        failed.append({\"Param\": pname_s, \"Reason\": \"Definition not found in shared parameter file group.\"})\r\n                        continue\r\n\r\n                    if bind_param_to_sheets_robust(doc, app, ext_def, group_token, pname_s, counts, failed):\r\n                        bound_count += 1\r\n\r\n        # Helps after freeze/thaw when bindings “exist” but UI/schedules don’t refresh\r\n        try:\r\n            doc.Regenerate()\r\n        except:\r\n            pass\r\n\r\n        TransactionManager.Instance.TransactionTaskDone()\r\n\r\n        debug[\"BindStrategyCounts\"] = counts\r\n\r\n        OUT = {\r\n            \"SharedParamFilePath\": sp_path,\r\n            \"SharedParamGroupName\": sp_group_name,\r\n            \"ParamGroupAssignment\": safe_str(group_assignment),\r\n            \"RevPrefix\": rev_prefix,\r\n            \"ParamNames\": param_names,\r\n            \"RevIdToParam\": rev_id_to_param_out,\r\n            \"RuntimeStamp\": runtime_stamp,\r\n            \"Report\": {\r\n                \"ParamGroupResolved\": group_label,\r\n                \"ParamGroupNormalized\": group_norm,\r\n                \"ParamNamesCount\": len(param_names),\r\n                \"BoundCount\": bound_count,\r\n                \"FailedCount\": len(failed),\r\n                \"FailedSample\": failed[:25],\r\n            },\r\n            \"Debug\": debug,\r\n            \"Notes\": notes,\r\n        }\r\n\r\n    except Exception as ex:\r\n        try:\r\n            TransactionManager.Instance.ForceCloseTransaction()\r\n        except:\r\n            pass\r\n\r\n        OUT = {\r\n            \"SharedParamFilePath\": sp_path,\r\n            \"SharedParamGroupName\": sp_group_name,\r\n            \"ParamGroupAssignment\": safe_str(group_assignment),\r\n            \"RevPrefix\": rev_prefix,\r\n            \"ParamNames\": param_names,\r\n            \"RevIdToParam\": rev_id_to_param_out,\r\n            \"RuntimeStamp\": runtime_stamp,\r\n            \"Report\": {\"error\": safe_str(ex)},\r\n            \"Debug\": debug,\r\n            \"Notes\": notes,\r\n        }\r\n",
+      "Engine": "CPython3",
+      "VariableInputPorts": true,
+      "Id": "5c07f68e213340529256bb5e8c839924",
+      "NodeType": "PythonScriptNode",
+      "Inputs": [
+        {
+          "Id": "4c503c298ab146a0a259c07054fc6a9e",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "d04f504629da4a0eb351545c048a5ba2",
+          "Name": "OUT",
+          "Description": "Result of the python script",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Runs an embedded Python script."
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Watch, CoreNodeModels",
+      "WatchWidth": 467.2,
+      "WatchHeight": 905.6,
+      "Id": "1ca638b0a2ee4659afb5a7cf0aee329a",
+      "NodeType": "ExtensionNode",
+      "Inputs": [
+        {
+          "Id": "f2ef611d10184d88ac109464b65cbf83",
+          "Name": "",
+          "Description": "Node to show output from",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "20d30fc86ded44dcbea250aff58c6fc9",
+          "Name": "",
+          "Description": "Node output",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Visualizes a node's output"
+    },
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "Code": "# [py.RevParams-StampSheets.py]\r\n# V00-02-2026-01-31t1525p\r\n# encoding: utf-8\r\n\r\nimport clr\r\nimport re\r\nfrom datetime import datetime\r\n\r\n#####################################\r\n## 0000_Revit-Imports-And-Context()\r\n#####################################\r\nclr.AddReference(\"RevitServices\")\r\nfrom RevitServices.Persistence import DocumentManager\r\nfrom RevitServices.Transactions import TransactionManager\r\n\r\nclr.AddReference(\"RevitAPI\")\r\nfrom Autodesk.Revit.DB import (\r\n    BuiltInCategory,\r\n    BuiltInParameter,\r\n    ElementId,\r\n    FilteredElementCollector,\r\n    Revision,\r\n    ViewSheet,\r\n)\r\n\r\ndoc = DocumentManager.Instance.CurrentDBDocument\r\n\r\n#####################################\r\n## 0001_Read-Inputs()\r\n#####################################\r\npacket_in = IN[0] if IN and len(IN) > 0 else None\r\n\r\ntrue_symbol_raw = IN[1] if IN and len(IN) > 1 else None\r\nonly_add_sheets_with_revs = IN[2] if IN and len(IN) > 2 and IN[2] is not None else True\r\nonly_show_issued = IN[3] if IN and len(IN) > 3 and IN[3] is not None else True\r\nclear_not_included = IN[4] if IN and len(IN) > 4 and IN[4] is not None else False\r\n\r\nMRK = u\"\\u25CF\"  # ●\r\ntry:\r\n    TRUE_SYMBOL = MRK if true_symbol_raw is None else (str(true_symbol_raw) if str(true_symbol_raw).strip() else MRK)\r\nexcept:\r\n    TRUE_SYMBOL = MRK\r\n\r\n#####################################\r\n## 0100_Utilities()\r\n#####################################\r\ndef safe_str(x):\r\n    try:\r\n        return \"\" if x is None else str(x)\r\n    except:\r\n        return \"\"\r\n\r\ndef _as_list(x):\r\n    if x is None:\r\n        return []\r\n    try:\r\n        return list(x)\r\n    except:\r\n        return []\r\n\r\ndef _unwrap_singleton_list(obj):\r\n    try:\r\n        if isinstance(obj, (list, tuple)) and len(obj) == 1:\r\n            return obj[0]\r\n    except:\r\n        pass\r\n    return obj\r\n\r\ndef _fail_loud(reason, hint=None, extract=None, errors=None):\r\n    msg = \"StampSheets input/operation validation failed\\n\"\r\n    msg += \"Reason={}\\n\".format(safe_str(reason))\r\n    if hint:\r\n        msg += \"Hint={}\\n\".format(safe_str(hint))\r\n    if extract:\r\n        msg += \"Extract={}\\n\".format(safe_str(extract))\r\n    if errors:\r\n        msg += \"ErrorCount={}\\n\".format(len(errors))\r\n        for e in errors[:20]:\r\n            msg += \"- {}\\n\".format(safe_str(e))\r\n        if len(errors) > 20:\r\n            msg += \"- ... ({} more)\\n\".format(len(errors) - 20)\r\n    raise Exception(msg)\r\n\r\n#####################################\r\n## 0120_Canonical-Name-Rebuild\r\n#####################################\r\nMAX_LEN_6BIT = int(128 / 6)  # 21\r\n\r\ndef to_yyyymmdd(date_str):\r\n    s = safe_str(date_str).strip()\r\n    if not s:\r\n        return \"00000000\"\r\n\r\n    m = re.match(r\"^\\s*(\\d{4})[-/](\\d{1,2})[-/](\\d{1,2})\\s*$\", s)\r\n    if m:\r\n        y = m.group(1)\r\n        mo = \"{:02d}\".format(int(m.group(2)))\r\n        d = \"{:02d}\".format(int(m.group(3)))\r\n        return \"{}{}{}\".format(y, mo, d)\r\n\r\n    m = re.match(r\"^\\s*(\\d{1,2})[-/](\\d{1,2})[-/](\\d{4})\\s*$\", s)\r\n    if m:\r\n        mo = \"{:02d}\".format(int(m.group(1)))\r\n        d = \"{:02d}\".format(int(m.group(2)))\r\n        y = m.group(3)\r\n        return \"{}{}{}\".format(y, mo, d)\r\n\r\n    digits = re.sub(r\"\\D+\", \"\", s)\r\n    if len(digits) >= 8:\r\n        digits = digits[:8]\r\n        if digits.startswith(\"19\") or digits.startswith(\"20\"):\r\n            return digits\r\n        mm = digits[0:2]\r\n        dd = digits[2:4]\r\n        yy = digits[4:8]\r\n        if yy.startswith(\"19\") or yy.startswith(\"20\"):\r\n            return \"{}{}{}\".format(yy, mm, dd)\r\n\r\n    return \"00000000\"\r\n\r\ndef compress_desc_to_snippet(desc):\r\n    s = safe_str(desc).upper()\r\n    s = re.sub(r\"[^A-Z0-9]+\", \"\", s)\r\n    return s or \"X\"\r\n\r\ndef build_canonical_param_name(prefix, yyyymmdd, desc, max_len=MAX_LEN_6BIT, desired_snip=10):\r\n    pfx = safe_str(prefix)\r\n    base = \"{}{}\".format(pfx, yyyymmdd)\r\n    remaining = max_len - len(base)\r\n    if remaining <= 0:\r\n        return base[:max_len]\r\n    snippet = compress_desc_to_snippet(desc)\r\n    snip_len = min(desired_snip, remaining)\r\n    return (base + snippet[:snip_len])[:max_len]\r\n\r\n#####################################\r\n## 0150_Packet-Extraction()\r\n#####################################\r\ndef extract_stamp_packet(obj):\r\n    obj = _unwrap_singleton_list(obj)\r\n\r\n    sp_path = \"\"\r\n    sp_group_name = \"\"\r\n    group_assignment = \"\"\r\n    rev_prefix = \"\"\r\n\r\n    param_names = []\r\n    rev_map_raw = {}\r\n\r\n    if isinstance(obj, dict):\r\n        sp_path = safe_str(obj.get(\"SharedParamFilePath\") or obj.get(\"FilePath\") or \"\")\r\n        sp_group_name = safe_str(obj.get(\"SharedParamGroupName\") or obj.get(\"GroupNameInFile\") or \"\")\r\n        group_assignment = safe_str(obj.get(\"ParamGroupAssignment\") or obj.get(\"ParamGroupAssignment_Input\") or \"\")\r\n        rev_prefix = safe_str(obj.get(\"RevPrefix\") or obj.get(\"revPrefix\") or \"\")\r\n        param_names = obj.get(\"ParamNames\") or []\r\n        rev_map_raw = obj.get(\"RevIdToParam\") or {}\r\n\r\n    elif isinstance(obj, (list, tuple)):\r\n        if len(obj) >= 1 and isinstance(obj[0], str):\r\n            sp_path = safe_str(obj[0])\r\n        if len(obj) >= 2 and isinstance(obj[1], list):\r\n            param_names = obj[1]\r\n        if len(obj) >= 3 and isinstance(obj[2], dict):\r\n            rev_map_raw = obj[2]\r\n        if len(obj) >= 4 and isinstance(obj[3], dict):\r\n            rep = obj[3]\r\n            sp_path = sp_path or safe_str(rep.get(\"SharedParamFilePath\") or \"\")\r\n            sp_group_name = safe_str(rep.get(\"GroupNameInFile\") or rep.get(\"SharedParamGroupName\") or \"\")\r\n            group_assignment = safe_str(rep.get(\"ParamGroupAssignment_Input\") or rep.get(\"ParamGroupAssignment\") or \"\")\r\n            rev_prefix = safe_str(rep.get(\"RevPrefix\") or rep.get(\"revPrefix\") or \"\")\r\n\r\n    try:\r\n        param_names = [safe_str(x) for x in param_names if x is not None and safe_str(x).strip()]\r\n    except:\r\n        param_names = []\r\n\r\n    rev_id_to_param = {}\r\n    try:\r\n        for k, v in (rev_map_raw or {}).items():\r\n            try:\r\n                rev_id_to_param[int(k)] = safe_str(v)\r\n            except:\r\n                pass\r\n    except:\r\n        rev_id_to_param = {}\r\n\r\n    return sp_path, sp_group_name, group_assignment, rev_prefix, param_names, rev_id_to_param\r\n\r\ndef rebuild_rev_id_to_param_from_model(rev_prefix, param_names_set):\r\n    rebuilt = {}\r\n    revs = list(FilteredElementCollector(doc).OfClass(Revision).ToElements())\r\n    for r in revs:\r\n        try:\r\n            rid = r.Id.IntegerValue\r\n        except:\r\n            continue\r\n        try:\r\n            rdate = safe_str(getattr(r, \"RevisionDate\", \"\"))\r\n        except:\r\n            rdate = \"\"\r\n        try:\r\n            rdesc = safe_str(getattr(r, \"Description\", \"\"))\r\n        except:\r\n            rdesc = \"\"\r\n        yyyymmdd = to_yyyymmdd(rdate)\r\n        pname = build_canonical_param_name(rev_prefix, yyyymmdd, rdesc)\r\n        if pname in param_names_set:\r\n            rebuilt[int(rid)] = pname\r\n    return rebuilt\r\n\r\n#####################################\r\n## 0200_Revision-Inclusion-Detection()\r\n#####################################\r\ndef get_revision_ids_from_clouds_in_view(doc_, view_id):\r\n    ids = set()\r\n    try:\r\n        clouds = list(\r\n            FilteredElementCollector(doc_, view_id)\r\n            .OfCategory(BuiltInCategory.OST_RevisionClouds)\r\n            .WhereElementIsNotElementType()\r\n            .ToElements()\r\n        )\r\n        for c in clouds:\r\n            rid = getattr(c, \"RevisionId\", None)\r\n            if rid and isinstance(rid, ElementId):\r\n                ids.add(rid.IntegerValue)\r\n    except:\r\n        pass\r\n    return ids\r\n\r\ndef get_additional_revision_ids(sheet):\r\n    ids = set()\r\n    try:\r\n        for rid in _as_list(sheet.GetAdditionalRevisionIds()):\r\n            try:\r\n                ids.add(rid.IntegerValue)\r\n            except:\r\n                pass\r\n    except:\r\n        pass\r\n    return ids\r\n\r\ndef get_all_revision_ids(sheet):\r\n    ids = set()\r\n    try:\r\n        fn = getattr(sheet, \"GetAllRevisionIds\", None)\r\n        if fn is not None:\r\n            for rid in _as_list(sheet.GetAllRevisionIds()):\r\n                try:\r\n                    ids.add(rid.IntegerValue)\r\n                except:\r\n                    pass\r\n    except:\r\n        pass\r\n    return ids\r\n\r\ndef revision_is_issued(rev_elem):\r\n    try:\r\n        p = rev_elem.get_Parameter(BuiltInParameter.REVISION_ISSUED)\r\n        if p:\r\n            return int(p.AsInteger()) == 1\r\n    except:\r\n        pass\r\n    try:\r\n        return bool(getattr(rev_elem, \"Issued\", False))\r\n    except:\r\n        return False\r\n\r\ndef get_included_revision_ids(doc_, sheet, only_issued):\r\n    addl = get_additional_revision_ids(sheet)\r\n    all_ids = get_all_revision_ids(sheet)\r\n    clouds_sheet = get_revision_ids_from_clouds_in_view(doc_, sheet.Id)\r\n\r\n    clouds_views = set()\r\n    try:\r\n        for vid in _as_list(sheet.GetAllPlacedViews()):\r\n            clouds_views.update(get_revision_ids_from_clouds_in_view(doc_, vid))\r\n    except:\r\n        pass\r\n\r\n    included = set()\r\n    included.update(addl)\r\n    included.update(all_ids)\r\n    included.update(clouds_sheet)\r\n    included.update(clouds_views)\r\n\r\n    if not only_issued:\r\n        return included, addl, clouds_sheet, clouds_views, all_ids\r\n\r\n    issued_only = set()\r\n    for rid_int in included:\r\n        try:\r\n            rev_elem = doc_.GetElement(ElementId(int(rid_int)))\r\n        except:\r\n            rev_elem = None\r\n        if rev_elem is None:\r\n            continue\r\n        if revision_is_issued(rev_elem):\r\n            issued_only.add(int(rid_int))\r\n\r\n    return issued_only, addl, clouds_sheet, clouds_views, all_ids\r\n\r\n#####################################\r\n## 0300_Param-Write()\r\n#####################################\r\ndef get_sheet_param_by_name(sheet, pname):\r\n    try:\r\n        return sheet.LookupParameter(pname)\r\n    except:\r\n        return None\r\n\r\ndef set_string_param(p, target):\r\n    try:\r\n        if getattr(p, \"IsReadOnly\", False):\r\n            return False, True, \"Parameter IsReadOnly=True\"\r\n    except:\r\n        pass\r\n\r\n    try:\r\n        cur = p.AsString()\r\n        cur = \"\" if cur is None else str(cur)\r\n    except:\r\n        cur = \"\"\r\n\r\n    if cur == target:\r\n        return False, False, None\r\n\r\n    try:\r\n        p.Set(target)\r\n        return True, False, None\r\n    except Exception as ex1:\r\n        try:\r\n            p.SetValueString(target)\r\n            return True, False, None\r\n        except Exception as ex2:\r\n            return False, True, \"Set failed: {}; SetValueString failed: {}\".format(ex1, ex2)\r\n\r\n#####################################\r\n## 0900_Main()\r\n#####################################\r\nnotes = []\r\ndebug = {}\r\nreport = {}\r\n\r\nruntime_stamp = datetime.now().strftime(\"%Y-%m-%dT%H:%M:%S\")\r\n\r\nsp_path, sp_group_name, group_assignment, rev_prefix, param_names, rev_id_to_param = extract_stamp_packet(packet_in)\r\n\r\nextract_dbg = {\r\n    \"RuntimeStamp\": runtime_stamp,\r\n    \"TopType\": type(_unwrap_singleton_list(packet_in)).__name__,\r\n    \"SharedParamFilePath\": sp_path,\r\n    \"SharedParamGroupName\": sp_group_name,\r\n    \"ParamGroupAssignment\": group_assignment,\r\n    \"RevPrefix\": rev_prefix,\r\n    \"ParamNamesCount\": len(param_names),\r\n    \"RevIdToParamCount\": len(rev_id_to_param),\r\n}\r\n\r\nrev_prefix_used = (rev_prefix or \"REV\").strip()\r\nparam_names_set = set(param_names)\r\n\r\nrebuilt = False\r\nif len(rev_id_to_param) == 0 and param_names:\r\n    rev_id_to_param = rebuild_rev_id_to_param_from_model(rev_prefix_used, param_names_set)\r\n    rebuilt = True\r\n    extract_dbg[\"RevIdToParamRebuiltCount\"] = len(rev_id_to_param)\r\n\r\nreport.update({\r\n    \"RuntimeStamp\": runtime_stamp,\r\n    \"SharedParamFilePath\": sp_path,\r\n    \"SharedParamGroupName\": sp_group_name,\r\n    \"ParamGroupAssignment\": group_assignment,\r\n    \"RevPrefix\": rev_prefix_used,\r\n    \"ParamNamesCount\": len(param_names),\r\n    \"RevIdToParamCount\": len(rev_id_to_param),\r\n    \"RevIdToParamRebuilt\": bool(rebuilt),\r\n    \"TrueSymbol\": TRUE_SYMBOL,\r\n    \"OnlyAddSheetsWithRevisions\": bool(only_add_sheets_with_revs),\r\n    \"OnlyShowIssuedRevisions\": bool(only_show_issued),\r\n    \"ClearNotIncluded\": bool(clear_not_included),\r\n})\r\n\r\nerrs = []\r\nif not param_names:\r\n    errs.append(\"ParamNames missing/empty from upstream packet.\")\r\nif not rev_id_to_param:\r\n    errs.append(\"RevIdToParam missing/empty from upstream packet (and rebuild failed).\")\r\nif errs:\r\n    _fail_loud(\r\n        reason=\"; \".join(errs),\r\n        hint=\"Upstream must provide ParamNames; RevIdToParam can rebuild only if model Revisions match canonical naming.\",\r\n        extract=extract_dbg,\r\n        errors=errs\r\n    )\r\n\r\n# collect sheets\r\nsheets = list(\r\n    FilteredElementCollector(doc)\r\n    .OfCategory(BuiltInCategory.OST_Sheets)\r\n    .WhereElementIsNotElementType()\r\n    .ToElements()\r\n)\r\nsheets = [s for s in sheets if isinstance(s, ViewSheet)]\r\n\r\nset_cells = 0\r\ncleared_cells = 0\r\nsheets_processed = 0\r\nsheets_skipped = 0\r\n\r\nmissing_param_errors = []\r\nwrite_fail_errors = []\r\nmissing_map_errors = []\r\nsheet_debug = []\r\n\r\n# Dynamo-safe transaction\r\ntry:\r\n    TransactionManager.Instance.EnsureInTransaction(doc)\r\n\r\n    for sh in sheets:\r\n        included_ids, addl, clouds_sheet, clouds_views, all_ids = get_included_revision_ids(doc, sh, only_show_issued)\r\n\r\n        try:\r\n            sh_num = safe_str(sh.SheetNumber)\r\n        except:\r\n            sh_num = \"<unknown>\"\r\n\r\n        included_param_names = set()\r\n        unmapped_ids = []\r\n\r\n        for rid_int in included_ids:\r\n            pname = rev_id_to_param.get(int(rid_int), None)\r\n            if pname:\r\n                included_param_names.add(pname)\r\n            else:\r\n                unmapped_ids.append(int(rid_int))\r\n\r\n        sheet_debug.append({\r\n            \"SheetNumber\": sh_num,\r\n            \"IncludedRevisionIds\": len(included_ids),\r\n            \"UnmappedIncludedRevisionIds\": len(unmapped_ids),\r\n            \"IncludedParamNames\": len(included_param_names),\r\n            \"CheckedOnSheetCount\": len(addl),\r\n            \"CloudsOnSheetCount\": len(clouds_sheet),\r\n            \"CloudsInViewsCount\": len(clouds_views),\r\n            \"GetAllRevisionIdsCount\": len(all_ids),\r\n        })\r\n\r\n        if unmapped_ids:\r\n            if len(missing_map_errors) < 50:\r\n                missing_map_errors.append({\r\n                    \"Sheet\": sh_num,\r\n                    \"UnmappedRevisionIds\": unmapped_ids[:20],\r\n                    \"RevPrefixUsed\": rev_prefix_used,\r\n                })\r\n\r\n        if only_add_sheets_with_revs and len(included_param_names) == 0:\r\n            sheets_skipped += 1\r\n            continue\r\n\r\n        sheets_processed += 1\r\n\r\n        for pname in included_param_names:\r\n            p = get_sheet_param_by_name(sh, pname)\r\n            if p is None:\r\n                if len(missing_param_errors) < 50:\r\n                    missing_param_errors.append({\"Sheet\": sh_num, \"Param\": safe_str(pname), \"Reason\": \"LookupParameter returned None\"})\r\n                continue\r\n\r\n            changed, failed, reason = set_string_param(p, TRUE_SYMBOL)\r\n            if failed:\r\n                if len(write_fail_errors) < 50:\r\n                    write_fail_errors.append({\r\n                        \"Sheet\": sh_num,\r\n                        \"Param\": safe_str(pname),\r\n                        \"IsReadOnly\": bool(getattr(p, \"IsReadOnly\", False)),\r\n                        \"Reason\": safe_str(reason),\r\n                    })\r\n                continue\r\n            if changed:\r\n                set_cells += 1\r\n\r\n        if (not only_add_sheets_with_revs) and clear_not_included:\r\n            for pname in param_names:\r\n                if pname in included_param_names:\r\n                    continue\r\n                p = get_sheet_param_by_name(sh, pname)\r\n                if p is None:\r\n                    continue\r\n                changed, failed, reason = set_string_param(p, \"\")\r\n                if failed:\r\n                    if len(write_fail_errors) < 50:\r\n                        write_fail_errors.append({\r\n                            \"Sheet\": sh_num,\r\n                            \"Param\": safe_str(pname),\r\n                            \"IsReadOnly\": bool(getattr(p, \"IsReadOnly\", False)),\r\n                            \"Reason\": safe_str(reason),\r\n                        })\r\n                    continue\r\n                if changed:\r\n                    cleared_cells += 1\r\n\r\n    try:\r\n        doc.Regenerate()\r\n    except:\r\n        pass\r\n\r\nfinally:\r\n    try:\r\n        TransactionManager.Instance.TransactionTaskDone()\r\n    except:\r\n        pass\r\n\r\n# fail-loud if any operational errors occurred\r\nop_errors = []\r\nif missing_map_errors:\r\n    op_errors.append(\"Included revisions could not be mapped to parameters (RevIdToParam mismatch).\")\r\nif missing_param_errors:\r\n    op_errors.append(\"Some sheet parameters were missing (LookupParameter returned None).\")\r\nif write_fail_errors:\r\n    op_errors.append(\"Some parameters could not be written (read-only or Set failures).\")\r\n\r\nif op_errors:\r\n    _fail_loud(\r\n        reason=\"; \".join(op_errors),\r\n        hint=\"Binding must exist on sheets; name rule must match; read-only failures must be resolved by re-binding correctly.\",\r\n        extract={\r\n            **extract_dbg,\r\n            \"SheetsTotal\": len(sheets),\r\n            \"SheetsProcessed\": sheets_processed,\r\n            \"SheetsSkipped\": sheets_skipped,\r\n            \"SetCells\": set_cells,\r\n            \"ClearedCells\": cleared_cells,\r\n        },\r\n        errors=[\r\n            \"MissingMapSample={}\".format(missing_map_errors[:10]),\r\n            \"MissingParamSample={}\".format(missing_param_errors[:10]),\r\n            \"WriteFailSample={}\".format(write_fail_errors[:10]),\r\n        ]\r\n    )\r\n\r\nreport.update({\r\n    \"SheetsTotal\": len(sheets),\r\n    \"SheetsProcessed\": sheets_processed,\r\n    \"SheetsSkippedNoRevs\": sheets_skipped,\r\n    \"SetCells\": set_cells,\r\n    \"ClearedCells\": cleared_cells,\r\n    \"MissingMapCount\": len(missing_map_errors),\r\n    \"MissingParamCount\": len(missing_param_errors),\r\n    \"WriteFailCount\": len(write_fail_errors),\r\n})\r\n\r\ndebug.update({\r\n    \"Extract\": extract_dbg,\r\n    \"SheetDebugSample\": sheet_debug[:50],\r\n})\r\n\r\nOUT = {\r\n    \"SharedParamFilePath\": sp_path,\r\n    \"SharedParamGroupName\": sp_group_name,\r\n    \"ParamGroupAssignment\": group_assignment,\r\n    \"RevPrefix\": rev_prefix_used,\r\n    \"ParamNames\": [safe_str(x) for x in param_names],\r\n    \"RevIdToParam\": {safe_str(k): safe_str(v) for k, v in rev_id_to_param.items()},\r\n    \"Report\": report,\r\n    \"Debug\": debug,\r\n    \"Notes\": notes,\r\n}\r\n",
+      "Engine": "CPython3",
+      "VariableInputPorts": true,
+      "Id": "c3ad7e6f414d4c959768592ce9bec772",
+      "NodeType": "PythonScriptNode",
+      "Inputs": [
+        {
+          "Id": "fada396191a8415da89c6cb0c9b0d717",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "1786a6e902a5415b9ab3de7834313771",
+          "Name": "IN[1]",
+          "Description": "Input #1",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "dea1ee6574294998a9e6b0ffe52dd7d3",
+          "Name": "IN[2]",
+          "Description": "Input #2",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "5b699dda42774ad7b89945460676ea72",
+          "Name": "IN[3]",
+          "Description": "Input #3",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "ad9584a03cb44e1294e1b960590c33cd",
+          "Name": "IN[4]",
+          "Description": "Input #4",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "f4f1b2d1ab2547b9897c1bf717453fda",
+          "Name": "OUT",
+          "Description": "Result of the python script",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Runs an embedded Python script."
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Watch, CoreNodeModels",
+      "WatchWidth": 200.0,
+      "WatchHeight": 200.0,
+      "Id": "9a2953654a434f3eaffd070c53c4bffe",
+      "NodeType": "ExtensionNode",
+      "Inputs": [
+        {
+          "Id": "914597f751d341a497e98ad7afcab230",
+          "Name": "",
+          "Description": "Node to show output from",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "347eee1f95594ed9886833833072fcff",
+          "Name": "",
+          "Description": "Node output",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Visualizes a node's output"
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "ec08ae2b7ccf4b06a0e9957a732b4fc0",
+      "End": "5b699dda42774ad7b89945460676ea72",
+      "Id": "6d7160072002436480d23b921f162768",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "152999220554401d8d41379a31b5b3e4",
+      "End": "e7f188c8b80a477a965f698bc12fa3e8",
+      "Id": "848ad9471eda4770abce0eb75413a460",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "45044862460b4bb8b0c31c8706a38132",
+      "End": "1786a6e902a5415b9ab3de7834313771",
+      "Id": "377cbcfba59d4650b8e0a950f8dcfc63",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "ff8e363ec72341848669100865c75e4d",
+      "End": "dea1ee6574294998a9e6b0ffe52dd7d3",
+      "Id": "30848eff35144501a8786e1a75e7d6fa",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "04c68317a6534680b8de978ab6aabc53",
+      "End": "394b4d7051cb4e10b59832a69dfe4752",
+      "Id": "891de32322ce4804bd5ba93fbe711e50",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "52f57e7c8a2b45079a299257b420b959",
+      "End": "53888dcb5d5f44139a4c843b89ef5438",
+      "Id": "45d4b8191a4d4af39f96a0647e639469",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "ea0f405a7230485db8e1c5701fab9e6a",
+      "End": "2f9618834cd54d5d927bc330b4d60a11",
+      "Id": "ab0304cf711d4738b549d45443761e3f",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "ea0f405a7230485db8e1c5701fab9e6a",
+      "End": "ceea8341d1684b9bb50fc5734dc020ee",
+      "Id": "f8e95ae9ed68417d86e4e5b4ebe1cf88",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "95214daafa9d4553ae06010fff9d62e7",
+      "End": "fbb1175268754385a311776f1f7e6dd0",
+      "Id": "64de7008e3554abea7bdc86edacb3f2a",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "f6052587b9814d3ea0f53f775492f212",
+      "End": "ad9584a03cb44e1294e1b960590c33cd",
+      "Id": "00143823efc446d5905500410d4d9b62",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "b6bcf092ee3e4f7ebfb98dbc47a0cd8d",
+      "End": "504f068f02ba4f909535ab6562cd583f",
+      "Id": "b48b40c1d62d4b84960553ad16df1fd5",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "b6bcf092ee3e4f7ebfb98dbc47a0cd8d",
+      "End": "4c503c298ab146a0a259c07054fc6a9e",
+      "Id": "e4f0481064384e409b306e41c4d2bb1b",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "d04f504629da4a0eb351545c048a5ba2",
+      "End": "f2ef611d10184d88ac109464b65cbf83",
+      "Id": "018d8b4d1f4b459790566255ffac8bc1",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "d04f504629da4a0eb351545c048a5ba2",
+      "End": "fada396191a8415da89c6cb0c9b0d717",
+      "Id": "49cb8ddba56c48938ff723f4ea84f114",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "f4f1b2d1ab2547b9897c1bf717453fda",
+      "End": "914597f751d341a497e98ad7afcab230",
+      "Id": "fc9d467ba5ec40a7a84107010607149b",
+      "IsHidden": "False"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "EnableLegacyPolyCurveBehavior": true,
+  "Thumbnail": "",
+  "GraphDocumentationURL": null,
+  "ExtensionWorkspaceData": [
+    {
+      "ExtensionGuid": "28992e1d-abb9-417f-8b1b-05e053bee670",
+      "Name": "Properties",
+      "Version": "2.13",
+      "Data": {}
+    },
+    {
+      "ExtensionGuid": "DFBD9CC0-DB40-457A-939E-8C8555555A9D",
+      "Name": "Generative Design",
+      "Version": "2.0",
+      "Data": {}
+    }
+  ],
+  "Author": "",
+  "Linting": {
+    "activeLinter": "None",
+    "activeLinterId": "7b75fb44-43fd-4631-a878-29f4d5d8399a",
+    "warningCount": 0,
+    "errorCount": 0
+  },
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 1.0,
+      "HasRunWithoutCrash": true,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "3.3.0.6316",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "_Background Preview",
+      "EyeX": -17.0,
+      "EyeY": 24.0,
+      "EyeZ": 50.0,
+      "LookX": 12.0,
+      "LookY": -13.0,
+      "LookZ": -58.0,
+      "UpX": 0.0,
+      "UpY": 1.0,
+      "UpZ": 0.0
+    },
+    "ConnectorPins": [],
+    "NodeViews": [
+      {
+        "Id": "10a50d6791764e53946fbce925712181",
+        "Name": "06.Only Show Issued Revisions(TRUE)",
+        "IsSetAsInput": true,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 741.2311468497988,
+        "Y": -1132.3406123471668
+      },
+      {
+        "Id": "ba163babc5af454690230805cc4b1aeb",
+        "Name": "02.Revision param prefix",
+        "IsSetAsInput": true,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": -1455.5813985734358,
+        "Y": -1363.3406255852785
+      },
+      {
+        "Id": "902b9bdf6f1e424a87ab1c9e9aff7b5a",
+        "Name": "04.Marker Symbol",
+        "IsSetAsInput": true,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 891.0165321166638,
+        "Y": -1410.4925698546008
+      },
+      {
+        "Id": "efd6621f61394d3c8a3a886c7db9cba6",
+        "Name": "05.Only Add Sheets With Revisions",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 766.3133039629171,
+        "Y": -1268.6863632136751
+      },
+      {
+        "Id": "259abe3804d649c1adaa3affd5047015",
+        "Name": "01.Param group assignment in proerties",
+        "IsSetAsInput": true,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": -1577.3458883138744,
+        "Y": -1506.8801565098809
+      },
+      {
+        "Id": "639b0ac01a9e4504a146bb7cc5e90614",
+        "Name": "03.Make Params Non-User-Modifyable",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": false,
+        "X": -1559.1084825825067,
+        "Y": -1216.802462982985
+      },
+      {
+        "Id": "49c2229a5efc443abc4889179a716e3a",
+        "Name": "py.RevParams-WriteSharedParamFile.py",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": -1003.0260370316587,
+        "Y": -1510.7203857767297
+      },
+      {
+        "Id": "cc8a08aeefc84df9830399e4e6afac0d",
+        "Name": "py.RevParams-WriteSharedParamFile.py",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": -1569.1577460109168,
+        "Y": -1063.6453914995639
+      },
+      {
+        "Id": "d5a9c70759cd4dd1b060510d89eebfb2",
+        "Name": "Watch",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": -1004.6864461462046,
+        "Y": -1276.983308655535
+      },
+      {
+        "Id": "3ebe60ed0d2a405f9d233de6a27ce235",
+        "Name": "07.Clear unset Sheets(TRUE)",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 814.2376433567366,
+        "Y": -993.3751473566642
+      },
+      {
+        "Id": "57a4aaff8484485ba7699d2b80ffc86f",
+        "Name": "py.RevParams-PurgeLikely.py",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": -458.56229174189656,
+        "Y": -1510.221286948589
+      },
+      {
+        "Id": "ef34eb46ecf94e9d90139b88ea20b584",
+        "Name": "Watch",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": -459.10651555008803,
+        "Y": -1207.2750106425121
+      },
+      {
+        "Id": "5c07f68e213340529256bb5e8c839924",
+        "Name": "py.RevParams-BindToSheets.py",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 99.9252101802092,
+        "Y": -1507.0180545427193
+      },
+      {
+        "Id": "1ca638b0a2ee4659afb5a7cf0aee329a",
+        "Name": "Watch",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 98.07118584151027,
+        "Y": -1209.660368656481
+      },
+      {
+        "Id": "c3ad7e6f414d4c959768592ce9bec772",
+        "Name": "py.RevParams-StampSheets.py",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 1300.4899402689944,
+        "Y": -1506.5497545347814
+      },
+      {
+        "Id": "9a2953654a434f3eaffd070c53c4bffe",
+        "Name": "Watch",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 1300.7646152782281,
+        "Y": -1232.1641008031697
+      }
+    ],
+    "Annotations": [
+      {
+        "Id": "a4ce81f736634a5cafe3f4b434f9712f",
+        "Title": "Parameters",
+        "DescriptionText": "Description <Double click here to edit group description>",
+        "IsExpanded": true,
+        "WidthAdjustment": 0.0,
+        "HeightAdjustment": 0.0,
+        "Nodes": [
+          "ba163babc5af454690230805cc4b1aeb",
+          "259abe3804d649c1adaa3affd5047015",
+          "639b0ac01a9e4504a146bb7cc5e90614",
+          "cc8a08aeefc84df9830399e4e6afac0d"
+        ],
+        "HasNestedGroups": false,
+        "Left": -1587.3458883138744,
+        "Top": -1579.280156509881,
+        "Width": 401.7881423029578,
+        "Height": 649.0347650103171,
+        "FontSize": 36.0,
+        "GroupStyleId": "883066aa-1fe2-44a4-9bd1-c3df86bfe9f6",
+        "InitialTop": -1506.8801565098809,
+        "InitialHeight": 588.234765010317,
+        "TextblockHeight": 62.4,
+        "Background": "#FFFFB8D8"
+      },
+      {
+        "Id": "f8b8d0573fba481880b34a1555e9bafd",
+        "Title": "Sheet Data",
+        "DescriptionText": "Description <Double click here to edit group description>",
+        "IsExpanded": true,
+        "WidthAdjustment": 0.0,
+        "HeightAdjustment": 0.0,
+        "Nodes": [
+          "10a50d6791764e53946fbce925712181",
+          "902b9bdf6f1e424a87ab1c9e9aff7b5a",
+          "efd6621f61394d3c8a3a886c7db9cba6",
+          "3ebe60ed0d2a405f9d233de6a27ce235"
+        ],
+        "HasNestedGroups": false,
+        "Left": 731.2311468497988,
+        "Top": -1482.8925698546009,
+        "Width": 379.4821571131182,
+        "Height": 621.3174224979366,
+        "FontSize": 36.0,
+        "GroupStyleId": "883066aa-1fe2-44a4-9bd1-c3df86bfe9f6",
+        "InitialTop": -1410.4925698546008,
+        "InitialHeight": 562.1174224979366,
+        "TextblockHeight": 62.4,
+        "Background": "#FFFFB8D8"
+      }
+    ],
+    "X": 1486.2040412194658,
+    "Y": 1405.9798215941541,
+    "Zoom": 0.9309772808497638
+  }
+}
