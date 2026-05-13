@@ -1,5 +1,5 @@
 # Py-Arrows.py
-# V01-00
+# V01-01
 # Dynamo Python node for Revit 2025 Arrowhead type standardization.
 #
 # PURPOSE
@@ -7,6 +7,7 @@
 # - Standardize names using size + kind + optional "Open".
 # - Preview changes, rename keepers, merge duplicates, and optionally delete duplicates.
 # - Audit Arrow Style values so unknown styles are reported.
+# - Optionally snap arrow sizes to a preferred allowable-size list.
 #
 # INPUTS
 # IN[0] = commit_changes (bool, default=False)
@@ -16,6 +17,11 @@
 #         1 = Sentence
 #         2 = Title
 #         3 = UPPER
+# IN[3] = preferred_sizes_text (str, optional, default="")
+#         Comma-separated inch sizes, examples:
+#         1/32", 3/32", 1/8", 3/16"
+#         1/32,3/32,1/8,3/16
+#         0.125, 0.1875
 #
 # OUTPUT
 # OUT = {
@@ -29,10 +35,14 @@
 #   "failed_data": [[...], ...],
 #   "skipped_data": [[...], ...],
 #   "style_inventory": [[style_id, count], ...],
-#   "unknown_style_data": [[id, old_name, style_id, reason], ...]
+#   "unknown_style_data": [[id, old_name, style_id, reason], ...],
+#   "preferred_sizes_input": str,
+#   "preferred_sizes_inches": [float, ...],
+#   "preferred_sizes_text": [str, ...]
 # }
 
 import clr  # Revit / .NET interop
+import re  # Text parsing
 
 # Revit API assembly
 clr.AddReference("RevitAPI")
@@ -56,6 +66,7 @@ doc = DocumentManager.Instance.CurrentDBDocument
 commit_changes = bool(IN[0]) if len(IN) > 0 and IN[0] is not None else False  # Commit switch
 delete_merged_duplicates = bool(IN[1]) if len(IN) > 1 and IN[1] is not None else False  # Delete merged duplicates switch
 case_mode = int(IN[2]) if len(IN) > 2 and IN[2] is not None else 2  # 0=lower, 1=Sentence, 2=Title, 3=UPPER
+preferred_sizes_input = IN[3] if len(IN) > 3 and IN[3] is not None else ""  # Optional comma-separated preferred sizes
 
 
 # Safely convert any value to string
@@ -246,6 +257,81 @@ def prefix_text_from_32nds(n32):
     return "%02d." % n32
 
 
+# Parse a single preferred-size token into inches
+def parse_size_token_to_inches(token):
+    raw = safe_str(token).strip()  # Preserve original for diagnostics
+    if not raw:  # Ignore empty tokens
+        return None
+
+    value = raw.lower().strip()  # Case-insensitive parsing
+    value = value.replace("inches", "")
+    value = value.replace("inch", "")
+    value = value.replace("in.", "")
+    value = value.replace("in", "")
+    value = value.replace('"', "")
+    value = value.replace(" ", "").strip()
+
+    if not value:  # Ignore blank after cleanup
+        return None
+
+    if re.match(r'^\d+/\d+$', value):  # Fraction like 3/32
+        parts = value.split("/")
+        num = float(parts[0])
+        den = float(parts[1])
+        if den == 0:
+            return None
+        return num / den
+
+    if re.match(r'^\d+\.\d+$', value):  # Decimal inches like 0.125
+        return float(value)
+
+    if re.match(r'^\d+$', value):  # Whole inches like 1 or 2
+        return float(value)
+
+    return None  # Unsupported token format
+
+
+# Parse comma-separated preferred sizes into sorted unique inches
+def parse_preferred_sizes(text):
+    parsed = []
+    source_text = safe_str(text)
+
+    if not source_text.strip():  # No preferred sizes provided
+        return parsed
+
+    tokens = source_text.split(",")  # Comma-separated list
+    for token in tokens:  # Parse each token independently
+        inches_value = parse_size_token_to_inches(token)
+        if inches_value is None:
+            continue
+        if inches_value <= 0:
+            continue
+        parsed.append(inches_value)
+
+    unique_sorted = []
+    seen_keys = set()
+
+    for value in sorted(parsed):  # Deduplicate with tolerance
+        key = round(value, 8)
+        if key not in seen_keys:
+            seen_keys.add(key)
+            unique_sorted.append(value)
+
+    return unique_sorted
+
+
+# Snap a size to the nearest preferred size or nearest 1/32
+def get_target_size_32nds(size_inches, preferred_sizes_inches):
+    if preferred_sizes_inches:  # Snap to nearest preferred size when list exists
+        nearest_inches = min(
+            preferred_sizes_inches,
+            key=lambda x: (abs(x - size_inches), x)
+        )
+        return round_to_32nds(nearest_inches)
+
+    return round_to_32nds(size_inches)  # Default 1/32 rounding
+
+
 # Increment inventory count for an Arrow Style value
 def style_count_add(style_counts, style_value):
     if style_value not in style_counts:  # Initialize bucket on first sighting
@@ -332,15 +418,15 @@ def is_open_symbol(e, canonical_kind):
 
 
 # Build the target rename info for a single arrowhead type
-def build_target_info(e):
+def build_target_info(e, preferred_sizes_inches):
     current_name = get_type_name(e)  # Existing type name
 
     tick_size_ft = get_double_param(e, "Tick Size", None)  # Revit internal feet
     if tick_size_ft is None or tick_size_ft <= 0:  # Require usable size
         return None, "Missing Tick Size"
 
-    size_inches = feet_to_inches(tick_size_ft)  # Convert to inches
-    n32 = round_to_32nds(size_inches)  # Round to nearest 1/32
+    size_inches_raw = feet_to_inches(tick_size_ft)  # Convert to inches
+    n32 = get_target_size_32nds(size_inches_raw, preferred_sizes_inches)  # Snap to preferred sizes or 1/32
     size_text = inches_text_from_32nds(n32)  # Build displayed fraction
 
     canonical_kind, style_id, classify_source = classify_arrowhead(e, current_name)
@@ -368,6 +454,7 @@ def build_target_info(e):
         "size_text": size_text,
         "size_32nds": n32,
         "tick_size_ft": tick_size_ft,
+        "size_inches_raw": size_inches_raw,
         "arrow_style": style_id,
         "arrow_closed": get_int_param(e, "Arrow Closed", 0),
         "fill_tick": get_int_param(e, "Fill Tick", 0),
@@ -450,6 +537,10 @@ def row_to_block(row):
     )
 
 
+# Parse preferred sizes once up front
+preferred_sizes_inches = parse_preferred_sizes(preferred_sizes_input)  # Parsed allowable sizes
+preferred_sizes_text = [inches_text_from_32nds(round_to_32nds(x)) for x in preferred_sizes_inches]  # Display text list
+
 # Main data collection
 arrowheads = get_arrowhead_types(doc)  # All arrowhead types in project
 
@@ -468,7 +559,7 @@ for e in arrowheads:
     current_style = get_int_param(e, "Arrow Style", -1)  # Read style for audit
     style_count_add(style_counts, current_style)  # Count every style encountered
 
-    info, err = build_target_info(e)  # Build rename target
+    info, err = build_target_info(e, preferred_sizes_inches)  # Build rename target
     if err:  # Record skipped / unknown items
         skipped_data.append([e.Id.IntegerValue, get_type_name(e), err])
         if err == "Could not classify Arrow Style":
@@ -481,7 +572,7 @@ for e in arrowheads:
 for target_name in groups.keys():
     groups[target_name].sort(
         key=lambda x: (
-            0 if normalize_compare_text(x["old_name"]) == normalize_compare_text(target_name) else 1,
+            0 if safe_str(x["old_name"]).strip() == safe_str(target_name).strip() else 1,
             x["id"]
         )
     )
@@ -520,7 +611,7 @@ if commit_changes:
             keeper = items[0]  # First sorted item is keeper
             keeper_elem = keeper["element"]
 
-            if normalize_compare_text(keeper["old_name"]) != normalize_compare_text(target_name):  # Rename keeper if needed
+            if safe_str(keeper["old_name"]).strip() != safe_str(target_name).strip():  # Rename keeper if needed
                 try:
                     ok = set_type_name(keeper_elem, target_name)
                     if ok:
@@ -566,6 +657,8 @@ summary_lines = []
 summary_lines.append("Commit: {0}".format(commit_changes))
 summary_lines.append("Delete merged duplicates: {0}".format(delete_merged_duplicates))
 summary_lines.append("Case mode: {0}".format(case_mode))
+summary_lines.append("Preferred sizes input: {0}".format(safe_str(preferred_sizes_input)))
+summary_lines.append("Preferred sizes parsed: {0}".format(", ".join(preferred_sizes_text) if preferred_sizes_text else "<none>"))
 summary_lines.append("Total found: {0}".format(len(arrowheads)))
 summary_lines.append("Processable: {0}".format(len(preview_data)))
 summary_lines.append("Skipped: {0}".format(len(skipped_data)))
@@ -638,5 +731,8 @@ OUT = {
     "failed_data": failed_data,
     "skipped_data": skipped_data,
     "style_inventory": style_inventory,
-    "unknown_style_data": unknown_style_data
+    "unknown_style_data": unknown_style_data,
+    "preferred_sizes_input": safe_str(preferred_sizes_input),
+    "preferred_sizes_inches": preferred_sizes_inches,
+    "preferred_sizes_text": preferred_sizes_text
 }
