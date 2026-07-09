@@ -1,18 +1,20 @@
 # py-Text-Style-Family-Labels.py
-# V06-10
+# V06-12
 # IN[0]=FontPatternsCSV(str)       # filter, e.g. "", "Arial Narrow", "Arial*, *helvetica*"; supports * and ?
 # IN[1]=TransparentOnly(bool)
 # IN[2]=TabTo3_2(bool)
 # IN[3]=AllowColorRGB(bool)
-# IN[4]=TreatLabelAsBlue(bool)     # label/tag pool: black<->blue mapping
+# IN[4]=TreatLabelAsBlueDk(bool)   # label/tag pool: black<->blueDk mapping
 # IN[5]=CreateMissingSizes(bool)   # uses IN[6] sizes; does not require IN[7]=True
 # IN[6]=SizesInput(str)            # input sizes, e.g. "3/32, 1/4"
 # IN[7]=InputSizesOnly(bool)       # False=snap all to nearest 1/32"; True=limit to IN[6] only
-# IN[8]=TreatTextAsBlue(bool)      # text pool: black<->blue mapping
+# IN[8]=TreatTextAsRedDk(bool)     # text pool: black<->redDk mapping
 # OUT=list[str]
 
-#001-Imports
-import clr, math, re, fnmatch
+import clr
+import math
+import re
+import fnmatch
 
 clr.AddReference("RevitAPI")
 from Autodesk.Revit.DB import (
@@ -28,12 +30,13 @@ from System import Int64
 
 doc = DocumentManager.Instance.CurrentDBDocument
 
-#002-Input helpers
+
 def _b(i, default=False):
     try:
         return bool(IN[i])
     except:
         return default
+
 
 def _s(i, default=""):
     try:
@@ -45,21 +48,22 @@ def _s(i, default=""):
     except:
         return default
 
-#003-Inputs
+
 FontPatternsCSV      = _s(0, "Arial Narrow")
 TransparentOnly      = _b(1, False)
 TabTo3_2             = _b(2, False)
 AllowColorRGB        = _b(3, False)
-TreatLabelAsBlue     = _b(4, False)
+TreatLabelAsBlueDk   = _b(4, False)
 CreateMissingSizes   = _b(5, False)
 SizesInput           = _s(6, "")
 InputSizesOnly       = _b(7, False)
-TreatTextAsBlue      = _b(8, False)
+TreatTextAsRedDk     = _b(8, False)
 
-BLUE  = (0, 0, 128)
-BLACK = (0, 0, 0)
+BLUE_DK = (0, 0, 64)
+BLACK   = (0, 0, 0)
+RED_DK  = (64, 0, 0)
 
-#004-ElementId helpers
+
 def eid_val(eid, default=-1):
     if eid is None:
         return default
@@ -78,15 +82,17 @@ def eid_val(eid, default=-1):
     except:
         return default
 
+
 def make_eid(v):
     try:
         return ElementId(int(v))
     except:
         return ElementId(Int64(v))
 
+
 INVALID_ID_INT = eid_val(ElementId.InvalidElementId, -1)
 
-#005-Type name helpers
+
 def get_sym(tt):
     try:
         p = tt.get_Parameter(BuiltInParameter.SYMBOL_NAME_PARAM)
@@ -96,6 +102,7 @@ def get_sym(tt):
     except:
         pass
     return ""
+
 
 def set_sym(tt, name):
     try:
@@ -112,6 +119,7 @@ def set_sym(tt, name):
     except:
         return False
 
+
 def tname(tt):
     s = get_sym(tt)
     if s:
@@ -121,74 +129,66 @@ def tname(tt):
     except:
         return "<unnamed>"
 
-#006-Font filter/target helpers
+
 def normalize_known_font_name(font_name):
-    # Normalize known default font casing for Revit TEXT_FONT writes.
     s = str(font_name or "").strip()
     if s.lower() == "arial narrow":
         return "Arial Narrow"
     return s
 
+
 def parse_font_patterns(csv_text):
-    # Empty IN[0] defaults to Arial Narrow.
     raw = str(csv_text or "").strip()
     if not raw:
         raw = "Arial Narrow"
-
     parts = [p.strip() for p in raw.split(",") if p.strip()]
     return parts if parts else ["Arial Narrow"]
+
 
 FONT_PATTERNS = parse_font_patterns(FontPatternsCSV)
 
 FALLBACK_FONT = "Arial Narrow"
 DEFAULT_FONT = FALLBACK_FONT
 
+
 def font_matches_patterns(font_name):
-    # Match against Revit-reported font name only.
-    # No .NET/system font lookup is used.
     s = str(font_name or "").strip()
     if not s:
         return False
-
     s_low = s.lower()
     for pat in FONT_PATTERNS:
         if fnmatch.fnmatchcase(s_low, pat.lower()):
             return True
-
     return False
 
+
 def target_font_for(font_name):
-    # If current Revit font matches IN[0], keep it.
-    # If not, force to Arial Narrow.
     cur = str(font_name or "").strip()
     if cur and font_matches_patterns(cur):
         return normalize_known_font_name(cur), False
     return FALLBACK_FONT, True
 
+
 def font_token(font_name):
-    # Convert "Arial Narrow" to "ArialNarrow".
     s = str(font_name or FALLBACK_FONT).strip()
     s = re.sub(r"[^A-Za-z0-9]+", " ", s).strip()
-
     if not s:
         return "UnknownFont"
-
     return "".join([w[:1].upper() + w[1:] for w in s.split()])
 
-# Stores intended/updated font during this run.
-# This prevents stale reads from producing old names.
+
 EFFECTIVE_FONT_BY_ID = {}
 
-#007-Size parsing helpers
+
 def _parse_in(tok):
     if tok is None:
         return None
 
-    s = str(tok).strip().replace('"', '')
+    s = str(tok).strip().replace('"', "")
     if not s:
         return None
 
-    s = re.sub(r'\s+', ' ', s)
+    s = re.sub(r"\s+", " ", s)
 
     if "-" in s and "/" in s:
         a, b = [x.strip() for x in s.split("-", 1)]
@@ -226,6 +226,7 @@ def _parse_in(tok):
     except:
         return None
 
+
 def snap_32(inches):
     if inches is None:
         return 1.0 / 32.0
@@ -239,12 +240,13 @@ def snap_32(inches):
         ((lo + 1.0) / 32.0) if frac > 0.5 else (lo / 32.0)
     )
 
+
 def parse_sizes(s):
     if not str(s).strip():
         return []
 
     raw = str(s).replace(",", " ")
-    tokens = [t for t in re.split(r'[\s;]+', raw) if t.strip()]
+    tokens = [t for t in re.split(r"[\s;]+", raw) if t.strip()]
     vals = []
 
     for t in tokens:
@@ -254,9 +256,11 @@ def parse_sizes(s):
 
     return sorted(set(vals))
 
+
 ALLOWED_IN = parse_sizes(SizesInput)
 INPUT_SIZES_AVAILABLE = bool(SizesInput.strip()) and len(ALLOWED_IN) > 0
 LIMIT_TO_INPUT_SIZES = bool(InputSizesOnly and INPUT_SIZES_AVAILABLE)
+
 
 def nearest_allowed(inches):
     base = snap_32(inches)
@@ -264,13 +268,13 @@ def nearest_allowed(inches):
         return base
     return min(ALLOWED_IN, key=lambda s: (abs(s - base), s))
 
+
 def target_size_in(inches):
-    # Always snap to nearest 1/32".
-    # If IN[7]=True and IN[6] has sizes, limit to nearest input size.
     base = snap_32(inches)
     if LIMIT_TO_INPUT_SIZES:
         return nearest_allowed(base)
     return base
+
 
 def frac32(inches):
     n = int(round(float(inches) * 32.0))
@@ -287,7 +291,7 @@ def frac32(inches):
 
     return '{}"'.format(w) if r == 0 else '{}-{}/{}"'.format(w, r, d)
 
-#008-Color helpers
+
 def _rgb_from_packed(v):
     v = int(v)
     r = (v & 0xFF)
@@ -295,18 +299,17 @@ def _rgb_from_packed(v):
     b = (v >> 16) & 0xFF
     return (r, g, b)
 
+
 def pack_rgb(rgb):
     r, g, b = rgb
-
     r = max(0, min(255, int(r)))
     g = max(0, min(255, int(g)))
     b = max(0, min(255, int(b)))
-
     return int(r | (g << 8) | (b << 16))
+
 
 def set_rgb(tt, rgb):
     val = pack_rgb(rgb)
-
     for bip in (BuiltInParameter.TEXT_COLOR, BuiltInParameter.LINE_COLOR):
         try:
             p = tt.get_Parameter(bip)
@@ -315,14 +318,20 @@ def set_rgb(tt, rgb):
         except:
             pass
 
-def is_blue(rgb):
-    return rgb == BLUE
+
+def is_bluedk(rgb):
+    return rgb == BLUE_DK
+
+
+def is_reddk(rgb):
+    return rgb == RED_DK
+
 
 def is_black(rgb):
     return rgb == BLACK
 
 def is_other(rgb):
-    return (rgb is not None) and (not is_blue(rgb)) and (not is_black(rgb))
+    return rgb is not None and rgb not in (BLACK, BLUE_DK, RED_DK)
 
 _COLOR_WORDS = re.compile(
     r"\s+(red|green|blue|black|white|cyan|magenta|yellow|gray|grey)\s*$",
@@ -342,23 +351,44 @@ _COLOR_WORD_TO_RGB = {
     "grey":    (128, 128, 128),
 }
 
+def _rgb_from_packed(v):
+    v = int(v)
+    r = (v & 0xFF)
+    g = (v >> 8) & 0xFF
+    b = (v >> 16) & 0xFF
+    return (r, g, b)
+
+def pack_rgb(rgb):
+    r, g, b = rgb
+    r = max(0, min(255, int(r)))
+    g = max(0, min(255, int(g)))
+    b = max(0, min(255, int(b)))
+    return int(r | (g << 8) | (b << 16))
+
+def set_rgb(tt, rgb):
+    val = pack_rgb(rgb)
+    for bip in (BuiltInParameter.TEXT_COLOR, BuiltInParameter.LINE_COLOR):
+        try:
+            p = tt.get_Parameter(bip)
+            if p and (not p.IsReadOnly):
+                p.Set(val)
+        except:
+            pass
+
 def _color_word_rgb_from_name(nm):
     if not nm:
         return None
-
     m = _COLOR_WORDS.search(nm.strip())
     if not m:
         return None
-
     return _COLOR_WORD_TO_RGB.get(m.group(1).lower())
 
 def resolve_style_rgb(tt):
-    # Read color word before name cleanup, used for legacy names like "... red".
     nm = tname(tt)
 
     if AllowColorRGB:
         w_rgb = _color_word_rgb_from_name(nm)
-        if w_rgb and (w_rgb != BLUE) and (w_rgb != BLACK):
+        if w_rgb is not None:
             return w_rgb
 
     for bip in (BuiltInParameter.LINE_COLOR, BuiltInParameter.TEXT_COLOR):
@@ -372,33 +402,38 @@ def resolve_style_rgb(tt):
 
     return BLACK
 
-def normalize_color(rgb, allow_rgb, treat_as_blue):
+def normalize_color(rgb, allow_rgb, treat_as_bluedk=False, treat_as_reddk=False):
     if rgb is None:
         rgb = BLACK
 
-    if allow_rgb:
-        if is_other(rgb):
-            return rgb
+    if allow_rgb and is_other(rgb):
+        return rgb
 
-        if treat_as_blue:
-            return BLUE if is_black(rgb) else rgb
+    if treat_as_bluedk:
+        return BLUE_DK
 
-        return BLACK if is_blue(rgb) else rgb
+    if treat_as_reddk:
+        return RED_DK
 
-    return BLUE if treat_as_blue else BLACK
+    return BLACK
 
-def rgb_suffix_if_needed(final_rgb):
-    # Token format is RGB order: ###-###-###.
+def rgb_suffix_if_needed(final_rgb, treat_as_bluedk=False, treat_as_reddk=False):
     if not AllowColorRGB:
         return None
 
-    if is_blue(final_rgb) or is_black(final_rgb):
+    pooled = {BLACK}
+    if treat_as_bluedk:
+        pooled.add(BLUE_DK)
+    if treat_as_reddk:
+        pooled.add(RED_DK)
+
+    if final_rgb in pooled:
         return None
 
     r, g, b = final_rgb
     return ".{:03d}-{:03d}-{:03d}".format(r, g, b)
 
-#009-Style property helpers
+
 def read_props(tt):
     size_ft = 0.0
     font = None
@@ -431,8 +466,8 @@ def read_props(tt):
 
     return size_ft, font, bold, italic
 
+
 def set_font(tt, font_name):
-    # Write TEXT_FONT on the label/text style type.
     try:
         p = tt.get_Parameter(BuiltInParameter.TEXT_FONT)
         if p and (not p.IsReadOnly) and p.StorageType == StorageType.String:
@@ -441,8 +476,8 @@ def set_font(tt, font_name):
         pass
     return False
 
+
 def apply_font_policy(tt):
-    # Update font first, then store effective font for naming.
     tid = eid_val(tt.Id, INVALID_ID_INT)
     _size_ft, cur_font, _bold, _italic = read_props(tt)
 
@@ -450,7 +485,6 @@ def apply_font_policy(tt):
     target_font = normalize_known_font_name(target_font)
 
     ok = True
-
     if str(cur_font or "").strip() != target_font:
         ok = set_font(tt, target_font)
 
@@ -460,6 +494,7 @@ def apply_font_policy(tt):
         EFFECTIVE_FONT_BY_ID[tid] = final_font
 
     return cur_font, final_font, forced, ok
+
 
 def apply_office(tt, size_ft):
     if TransparentOnly:
@@ -478,28 +513,27 @@ def apply_office(tt, size_ft):
         except:
             pass
 
-#010-Name cleaning and canonical names
-_RGB_DASH_RE = re.compile(r'\.\d{3}-\d{3}-\d{3}(?=\.DUP\d+$|$)', re.IGNORECASE)
-_DUP_RE      = re.compile(r'\.DUP\d+$', re.IGNORECASE)
+
+_RGB_DASH_RE = re.compile(r"\.\d{3}-\d{3}-\d{3}(?=\.DUP\d+$|$)", re.IGNORECASE)
+_DUP_RE      = re.compile(r"\.DUP\d+$", re.IGNORECASE)
 _SUFFIX_NUM  = re.compile(r"\s+\d+$")
+
 
 def clean_display_name(nm):
     s = (nm or "").strip()
-
     s = s.replace("â€œ", '"').replace("â€", '"').replace("â€³", '"')
     s = re.sub(_DUP_RE, "", s).strip()
     s = re.sub(_RGB_DASH_RE, "", s).strip()
     s = re.sub(_COLOR_WORDS, "", s).strip()
     s = re.sub(_SUFFIX_NUM, "", s).strip()
     s = re.sub(r"\s+", " ", s)
-
     return s
 
-def canonical_for(tt, base_font=DEFAULT_FONT, treat_as_blue=True):
+
+def canonical_for(tt, base_font=DEFAULT_FONT, treat_as_bluedk=False, treat_as_reddk=False):
     size_ft, font, bold, italic = read_props(tt)
     tid = eid_val(tt.Id, INVALID_ID_INT)
 
-    # Name must follow updated/effective font.
     use_font = EFFECTIVE_FONT_BY_ID.get(tid, None)
     if not use_font:
         use_font, _forced = target_font_for(font)
@@ -512,20 +546,28 @@ def canonical_for(tt, base_font=DEFAULT_FONT, treat_as_blue=True):
 
     if bold:
         parts.append("BOLD")
-
     if italic:
         parts.append("ITALIC")
 
     parts.append(frac32(sz_in))
 
     cur_rgb = resolve_style_rgb(tt)
-    final_rgb = normalize_color(cur_rgb, AllowColorRGB, treat_as_blue)
-    suffix = rgb_suffix_if_needed(final_rgb)
+    final_rgb = normalize_color(
+        cur_rgb,
+        AllowColorRGB,
+        treat_as_bluedk=treat_as_bluedk,
+        treat_as_reddk=treat_as_reddk
+    )
+    suffix = rgb_suffix_if_needed(
+        final_rgb,
+        treat_as_bluedk=treat_as_bluedk,
+        treat_as_reddk=treat_as_reddk
+    )
 
     base = ".".join(parts)
     return (base + (suffix if suffix else "")), final_rgb
 
-#011-Rewire helpers
+
 def change_type(e, target_id):
     try:
         e.ChangeTypeId(target_id)
@@ -542,6 +584,7 @@ def change_type(e, target_id):
         pass
 
     return False
+
 
 def rewire_element_params(e, map_ids):
     changed = 0
@@ -560,6 +603,7 @@ def rewire_element_params(e, map_ids):
         pass
 
     return changed
+
 
 def rewire_familytypes(doc, map_ids):
     changed = 0
@@ -609,6 +653,7 @@ def rewire_familytypes(doc, map_ids):
 
     return changed
 
+
 def collect_used_type_ids(doc):
     used = set()
 
@@ -639,6 +684,7 @@ def collect_used_type_ids(doc):
 
     return used
 
+
 def rewire_all(map_all):
     elems_inst = list(FilteredElementCollector(doc).WhereElementIsNotElementType())
     elems_type = list(FilteredElementCollector(doc).WhereElementIsElementType())
@@ -659,6 +705,7 @@ def rewire_all(map_all):
 
     rewired_fm = rewire_familytypes(doc, map_all)
     return retyped, rewired, rewired_fm
+
 
 def delete_mapped_types(map_all):
     used = collect_used_type_ids(doc)
@@ -682,6 +729,7 @@ def delete_mapped_types(map_all):
 
     return deleted, kept
 
+
 def collect_pools():
     all_text_types = list(
         FilteredElementCollector(doc)
@@ -700,9 +748,8 @@ def collect_pools():
 
     return label_pool, text_pool
 
-#012-Process pool
-def process_pool(pool_types, template, base_font, treat_as_blue):
-    # Step 1: update font, size, office toggles, and color.
+
+def process_pool(pool_types, template, base_font, treat_as_bluedk=False, treat_as_reddk=False):
     processed = []
     font_changed = 0
     font_failed = []
@@ -746,10 +793,20 @@ def process_pool(pool_types, template, base_font, treat_as_blue):
                 except:
                     pass
 
-            fin = normalize_color(cur_rgb, AllowColorRGB, treat_as_blue)
+            fin = normalize_color(
+                cur_rgb,
+                AllowColorRGB,
+                treat_as_bluedk=treat_as_bluedk,
+                treat_as_reddk=treat_as_reddk
+            )
             set_rgb(live, fin)
 
-            can, _ = canonical_for(live, base_font, treat_as_blue)
+            can, _ = canonical_for(
+                live,
+                base_font,
+                treat_as_bluedk=treat_as_bluedk,
+                treat_as_reddk=treat_as_reddk
+            )
 
             audit.append("id={} font '{}' -> '{}' name '{}' -> '{}'".format(
                 eid_val(live.Id, 0),
@@ -764,18 +821,19 @@ def process_pool(pool_types, template, base_font, treat_as_blue):
         except:
             pass
 
-    # Step 2: group by canonical name after font policy is applied.
     groups = {}
 
     for tt in processed:
-        can, _ = canonical_for(tt, base_font, treat_as_blue)
+        can, _ = canonical_for(
+            tt,
+            base_font,
+            treat_as_bluedk=treat_as_bluedk,
+            treat_as_reddk=treat_as_reddk
+        )
         if not can:
             continue
         groups.setdefault(can, []).append(tt)
 
-    # Step 3: create missing sizes from IN[6].
-    # This does not require IN[7]=InputSizesOnly to be True.
-    # Missing styles are created with Arial Narrow.
     created = 0
 
     if CreateMissingSizes and INPUT_SIZES_AVAILABLE and template:
@@ -789,8 +847,17 @@ def process_pool(pool_types, template, base_font, treat_as_blue):
                 frac32(sz_in)
             )
 
-            desired = normalize_color(BLACK, AllowColorRGB, treat_as_blue)
-            suf = rgb_suffix_if_needed(desired)
+            desired = normalize_color(
+                BLACK,
+                AllowColorRGB,
+                treat_as_bluedk=treat_as_bluedk,
+                treat_as_reddk=treat_as_reddk
+            )
+            suf = rgb_suffix_if_needed(
+                desired,
+                treat_as_bluedk=treat_as_bluedk,
+                treat_as_reddk=treat_as_reddk
+            )
             want = base + (suf if suf else "")
 
             if want in groups:
@@ -827,7 +894,6 @@ def process_pool(pool_types, template, base_font, treat_as_blue):
             except:
                 pass
 
-    # Step 4: build duplicate map.
     dup_map = {}
     keepers = {}
 
@@ -848,7 +914,6 @@ def process_pool(pool_types, template, base_font, treat_as_blue):
             if tt.Id != keep.Id:
                 dup_map[eid_val(tt.Id, INVALID_ID_INT)] = keep.Id
 
-    # Step 5: temp rename mapped-away duplicates.
     for tid in dup_map.keys():
         try:
             tt = doc.GetElement(make_eid(tid))
@@ -859,14 +924,8 @@ def process_pool(pool_types, template, base_font, treat_as_blue):
 
     return created, dup_map, keepers, len(processed), font_changed, font_failed, audit
 
-def final_rename_pass(pool_types, base_font, treat_as_blue):
-    # Final pass:
-    # 1. refresh live type
-    # 2. force/update font by policy
-    # 3. compute canonical from effective font
-    # 4. temp rename all
-    # 5. rename keepers
-    # 6. map duplicates for another rewire/delete
+
+def final_rename_pass(pool_types, base_font, treat_as_bluedk=False, treat_as_reddk=False):
     live_types = []
     audit = []
     failed = []
@@ -903,7 +962,12 @@ def final_rename_pass(pool_types, base_font, treat_as_blue):
             tid = eid_val(tt.Id, 0)
             old_names[tid] = clean_display_name(get_sym(tt)).lower()
 
-            can, _ = canonical_for(tt, base_font, treat_as_blue)
+            can, _ = canonical_for(
+                tt,
+                base_font,
+                treat_as_bluedk=treat_as_bluedk,
+                treat_as_reddk=treat_as_reddk
+            )
             if not can:
                 continue
 
@@ -923,7 +987,6 @@ def final_rename_pass(pool_types, base_font, treat_as_blue):
         except:
             pass
 
-    # Temp rename every live type first to free all canonical names.
     for tt in live_types:
         try:
             tid = eid_val(tt.Id, 0)
@@ -987,14 +1050,14 @@ def final_rename_pass(pool_types, base_font, treat_as_blue):
 
     return renamed, failed, dup_map, audit, font_changed
 
-#013-Main
+
 log = []
-log.append("V06-10: Labels+Text canonicalize")
+log.append("V06-12: Labels+Text canonicalize")
 log.append("Font patterns IN[0]: {}".format(", ".join(FONT_PATTERNS)))
 log.append("Fallback font: {}".format(FALLBACK_FONT))
 log.append("AllowColorRGB: {}".format(AllowColorRGB))
-log.append("TreatLabelAsBlue: {}".format(TreatLabelAsBlue))
-log.append("TreatTextAsBlue: {}".format(TreatTextAsBlue))
+log.append("TreatLabelAsBlueDk: {}".format(TreatLabelAsBlueDk))
+log.append("TreatTextAsRedDk: {}".format(TreatTextAsRedDk))
 log.append("InputSizesOnly IN[7]: {}".format(InputSizesOnly))
 log.append("Input sizes available: {}".format(INPUT_SIZES_AVAILABLE))
 log.append("Size behavior: {}".format(
@@ -1010,7 +1073,7 @@ log.append("Input sizes: {}".format(
 if not doc.IsFamilyDocument:
     OUT = log + ["Open a FAMILY (.rfa) and run."]
 else:
-    tx = Transaction(doc, "Labels+Text canonicalize V06-10")
+    tx = Transaction(doc, "Labels+Text canonicalize V06-12")
     tx.Start()
 
     try:
@@ -1036,14 +1099,16 @@ else:
             label_pool,
             label_template,
             label_base_font,
-            TreatLabelAsBlue
+            treat_as_bluedk=TreatLabelAsBlueDk,
+            treat_as_reddk=False
         )
 
         created_txt, map_txt, keep_txt, processed_txt, fontchg_txt, fontfail_txt, audit_txt1 = process_pool(
             text_pool,
             text_template,
             text_base_font,
-            TreatTextAsBlue
+            treat_as_bluedk=False,
+            treat_as_reddk=TreatTextAsRedDk
         )
 
         log.append("Label pool: {}, processed: {}".format(len(label_pool), processed_lbl))
@@ -1091,19 +1156,20 @@ else:
         except:
             pass
 
-        # Refresh pools after delete/regenerate.
         label_pool, text_pool = collect_pools()
 
         final_lbl, failed_lbl, final_map_lbl, audit_lbl2, fontchg_lbl2 = final_rename_pass(
             label_pool,
             label_base_font,
-            TreatLabelAsBlue
+            treat_as_bluedk=TreatLabelAsBlueDk,
+            treat_as_reddk=False
         )
 
         final_txt, failed_txt, final_map_txt, audit_txt2, fontchg_txt2 = final_rename_pass(
             text_pool,
             text_base_font,
-            TreatTextAsBlue
+            treat_as_bluedk=False,
+            treat_as_reddk=TreatTextAsRedDk
         )
 
         log.append("Final rename pass: label={}, text={}, label_font_changed={}, text_font_changed={}".format(
@@ -1164,5 +1230,4 @@ else:
             tx.RollBack()
         except:
             pass
-
         OUT = log + ["An error occurred:", str(ex), repr(type(ex))]
