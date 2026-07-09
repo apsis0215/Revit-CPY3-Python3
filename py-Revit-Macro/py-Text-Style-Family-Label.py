@@ -1,5 +1,4 @@
 # py-Text-Style-Family-Labels.py
-# V06-12
 # IN[0]=FontPatternsCSV(str)       # filter, e.g. "", "Arial Narrow", "Arial*, *helvetica*"; supports * and ?
 # IN[1]=TransparentOnly(bool)
 # IN[2]=TabTo3_2(bool)
@@ -61,7 +60,7 @@ TreatTextAsRedDk     = _b(8, False)
 
 BLUE_DK = (0, 0, 64)
 BLACK   = (0, 0, 0)
-RED_DK  = (64, 0, 0)
+RED_DK  = (32, 0, 0)
 
 
 def eid_val(eid, default=-1):
@@ -521,7 +520,7 @@ _SUFFIX_NUM  = re.compile(r"\s+\d+$")
 
 def clean_display_name(nm):
     s = (nm or "").strip()
-    s = s.replace("â€œ", '"').replace("â€", '"').replace("â€³", '"')
+    s = s.replace("“", '"').replace("”", '"').replace("″", '"')
     s = re.sub(_DUP_RE, "", s).strip()
     s = re.sub(_RGB_DASH_RE, "", s).strip()
     s = re.sub(_COLOR_WORDS, "", s).strip()
